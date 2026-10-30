@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#eef0fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0c1a" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <title>Despesas</title>
@@ -67,8 +68,11 @@ nav button{flex:1;padding:12px 0 10px;border:0;background:none;color:var(--mut);
 nav button span{display:block;font-size:24px;line-height:1.2}
 nav button.on{color:var(--pri);font-weight:700}
 .view{display:none}.view.on{display:block}
-.viz{--c1:#2a78d6;--c2:#eb6834;--ink:var(--txt);--ink2:var(--mut);--grid:var(--line)}
-@media(prefers-color-scheme:dark){.viz{--c1:#3987e5;--c2:#d95926}}
+.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#8d8d88;--c1:var(--s1);--ink:var(--txt);--ink2:var(--mut);--grid:var(--line)}
+@media(prefers-color-scheme:dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#6b6b66}}
+.legend{flex-wrap:wrap;row-gap:6px}
+.vinfo{margin-top:6px;font-size:14px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
 .viz h3{font-size:15px;margin:0 0 2px}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--mut);margin:6px 0 10px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
@@ -95,10 +99,37 @@ nav button.on{color:var(--pri);font-weight:700}
 #alerta{position:fixed;left:10px;right:10px;top:10px;z-index:30;background:#7f1d1d;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #alerta p{margin:0 0 6px}
 #alerta button{background:#fff;color:#7f1d1d;border:0;border-radius:10px;padding:13px 26px;font-size:16px;font-weight:700;margin-top:6px}
+/* ===== TEMA CRISTAL ===== */
+body.t-cristal{--bg:#e9edfb;--card:rgba(255,255,255,.60);--txt:#0f1226;--mut:#5a6280;--pri:#4f5bd5;--line:rgba(60,70,130,.14);--ok:#12a05c;--bad:#e5384f;--warn:#f59e0b;
+  background:radial-gradient(420px 360px at 8% 0%,rgba(99,102,241,.35),transparent 70%),radial-gradient(380px 340px at 100% 18%,rgba(45,212,191,.28),transparent 70%),radial-gradient(420px 380px at 20% 100%,rgba(244,114,182,.22),transparent 70%),#eef0fb;background-attachment:fixed}
+@media(prefers-color-scheme:dark){body.t-cristal{--bg:#0a0c1a;--card:rgba(32,36,70,.52);--txt:#eef0ff;--mut:#9aa3c7;--pri:#8b94ff;--line:rgba(255,255,255,.10);--ok:#4ade80;--bad:#ff6b7d;
+  background:radial-gradient(420px 360px at 8% 0%,rgba(99,102,241,.45),transparent 70%),radial-gradient(380px 340px at 100% 18%,rgba(20,184,166,.28),transparent 70%),radial-gradient(420px 380px at 20% 100%,rgba(217,70,239,.22),transparent 70%),#0a0c1a;background-attachment:fixed}}
+body.t-cristal header{background:transparent;color:var(--txt);padding-bottom:6px}
+body.t-cristal header h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
+body.t-cristal #mnav{background:rgba(255,255,255,.35);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+@media(prefers-color-scheme:dark){body.t-cristal #mnav{background:rgba(20,24,50,.45)}}
+body.t-cristal .card,body.t-cristal .kpi{-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid rgba(255,255,255,.55);box-shadow:0 8px 28px rgba(40,50,120,.10);border-radius:20px}
+@media(prefers-color-scheme:dark){body.t-cristal .card,body.t-cristal .kpi{border-color:rgba(255,255,255,.10);box-shadow:0 8px 28px rgba(0,0,0,.35)}}
+body.t-cristal input,body.t-cristal select,body.t-cristal textarea{background:rgba(255,255,255,.45);border:1px solid var(--line);border-radius:14px}
+@media(prefers-color-scheme:dark){body.t-cristal input,body.t-cristal select,body.t-cristal textarea{background:rgba(255,255,255,.07)}}
+body.t-cristal .btn{background:linear-gradient(135deg,#6a74ee,#4f5bd5);color:#fff;border-radius:16px;box-shadow:0 8px 20px rgba(79,91,213,.35)}
+body.t-cristal .btn.sec{background:rgba(255,255,255,.4);color:var(--txt);box-shadow:none;border:1px solid var(--line)}
+@media(prefers-color-scheme:dark){body.t-cristal .btn.sec{background:rgba(255,255,255,.07)}}
+body.t-cristal .seg{background:rgba(120,130,200,.16);border-radius:14px}
+body.t-cristal .seg button.on{background:rgba(255,255,255,.75);color:#0f1226;border-radius:11px}
+@media(prefers-color-scheme:dark){body.t-cristal .seg button.on{background:rgba(255,255,255,.18);color:#fff}}
+body.t-cristal nav{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.6)}
+@media(prefers-color-scheme:dark){body.t-cristal nav{background:rgba(18,22,48,.58);border-top-color:rgba(255,255,255,.10)}}
+body.t-cristal nav button span{height:26px;display:flex;justify-content:center;align-items:center}
+body.t-cristal nav button span svg{width:25px;height:25px}
+body.t-cristal .fchip{background:rgba(255,255,255,.5);border-color:var(--line)}
+body.t-cristal .fchip.on{background:var(--pri);color:#fff}
+body.t-cristal .track{background:rgba(120,130,200,.18)}
+body.t-cristal .viz{--c1:#5b6cff;--c2:#f97316}
 </style>
 </head>
-<body>
-<header><h1>💰 Despesas</h1><span id="sync"></span></header>
+<body class="t-cristal">
+<header><h1>Despesas</h1><span id="sync"></span></header>
 <div id="mnav"><button id="prev">‹</button><b id="mesLabel"></b><button id="next">›</button></div>
 <main>
 
@@ -108,7 +139,7 @@ nav button.on{color:var(--pri);font-weight:700}
 </section>
 
 <!-- LANÇAR -->
-<section id="v-lancar" class="view">
+<section id="v-lancar" class="view on">
   <div class="card">
     <div class="seg" id="seg"><button data-t="despesa" class="on">Despesa</button><button data-t="receita">Receita</button></div>
     <label>Valor (R$)</label>
@@ -128,7 +159,7 @@ nav button.on{color:var(--pri);font-weight:700}
       <div id="baseBox" hidden><label>O valor informado é</label><select id="base"><option value="total">Total (divide)</option><option value="cada">De cada parcela</option></select></div>
     </div>
     <div class="mut" id="prevParc" style="margin-top:6px"></div>
-    <div class="only-d">
+    <div class="only-d" id="rmBox">
       <label>Terá reembolso?</label>
       <select id="rm"><option value="nao">Não</option><option value="sim">Sim</option></select>
     </div>
@@ -173,6 +204,16 @@ nav button.on{color:var(--pri);font-weight:700}
     <input type="file" id="arq" accept=".json" hidden>
   </div>
   <div class="card">
+    <b>Benefício mensal automático</b>
+    <div class="mut">Todo dia 1º o app lança uma receita em "Benefícios" e uma despesa em "Mercado" com o mesmo valor.</div>
+    <label>Valor por mês (R$) — deixe vazio para desativar</label>
+    <input id="autoValor" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+    <label>Começar a partir de</label>
+    <input id="autoDesde" type="month">
+    <button class="btn" id="salvaAuto">Salvar</button>
+    <p class="mut" id="autoStatus"></p>
+  </div>
+  <div class="card">
     <b>Categorias</b>
     <label>Despesas (uma por linha)</label>
     <textarea id="cats" rows="8"></textarea>
@@ -185,11 +226,11 @@ nav button.on{color:var(--pri);font-weight:700}
 </main>
 
 <nav>
-  <button data-v="painel"><span>📊</span>Painel</button>
-  <button data-v="lancar" class="on"><span>➕</span>Lançar</button>
-  <button data-v="lista"><span>🧾</span>Lista</button>
-  <button data-v="orc"><span>🎯</span>Orçamento</button>
-  <button data-v="cfg"><span>⚙️</span>Ajustes</button>
+  <button data-v="painel"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="9" rx="2"/><rect x="13.5" y="3.5" width="7" height="5" rx="2"/><rect x="13.5" y="11.5" width="7" height="9" rx="2"/><rect x="3.5" y="15.5" width="7" height="5" rx="2"/></svg></span>Painel</button>
+  <button data-v="lancar" class="on"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Lançar</button>
+  <button data-v="lista"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.8" cy="7" r=".9"/><circle cx="4.8" cy="12" r=".9"/><circle cx="4.8" cy="17" r=".9"/></svg></span>Lista</button>
+  <button data-v="orc"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5V12h8.5"/></svg></span>Orçamento</button>
+  <button data-v="cfg"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></span>Ajustes</button>
 </nav>
 
 <!-- EDITAR -->
@@ -226,9 +267,10 @@ nav button.on{color:var(--pri);font-weight:700}
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const DEF_CATS=['Alimentação','Mercado','Transporte','Moradia','Saúde','Lazer','Educação','Contas','Compras','Outros'];
-const DEF_CATS_R=['Salário','Freelance','Rendimentos','Outros'];
-const PAGS=['Pix','Débito','Crédito','Dinheiro','Boleto'];
+const DEF_CATS=['Alimentação','Mercado','Transporte','Moradia','Saúde','Lazer','Educação','Contas','Compras','Aporte','Reserva','Outros'];
+const DEF_CATS_R=['Salário','Benefícios','Freelance','Rendimentos','Outros'];
+const PAGS=['Pix','Débito','Crédito','Dinheiro','Boleto','Benefício'];
+const INV=['Aporte','Reserva'], isInv=c=>INV.includes(c);   // essas categorias contam como investimento, não como despesa
 
 // ---------- estado ----------
 // item: {id,tipo:'despesa'|'receita',data,desc,cat,pag,valor,st:'ok'|'pend',reemb,reembRec,grupo,parc,sync,rev,del}
@@ -240,6 +282,12 @@ items.forEach(i=>{i.reemb=!!i.reemb;i.reembRec=Number(i.reembRec)||0});  // reem
 let orc=LS.get('orc',{});            // {'2026-10':{Alimentação:800}}
 let orcDirty=LS.get('orcDirty',false), orcRev=0;
 let cats=LS.get('cats',DEF_CATS), catsR=LS.get('catsR',DEF_CATS_R);
+if(!LS.get('mig3',false)){   // versão 3: acrescenta as novas categorias a quem já usava o app
+  INV.forEach(c=>{if(!cats.includes(c))cats.splice(Math.max(0,cats.length-1),0,c)});
+  if(!catsR.includes('Benefícios'))catsR.splice(1,0,'Benefícios');
+  LS.set('cats',cats);LS.set('catsR',catsR);LS.set('mig3',true);
+}
+let auto=LS.get('auto',{valor:1201.87,desde:'2026-11'});   // lançamento automático mensal (Benefícios x Mercado)
 let url=LS.get('url','');
 let aba='lancar', tipo='despesa', filtro='todos', editId=null;
 let mes=new Date().toISOString().slice(0,7);
@@ -269,9 +317,10 @@ const touch=it=>{it.rev=(it.rev||0)+1;it.sync=false};
 // ---------- cálculos ----------
 const gastoCat=(m,cat)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===cat&&i.data.startsWith(m)).reduce((s,i)=>s+i.valor-i.reembRec,0));   // gasto líquido: desconta o reembolso já recebido
 function calc(m){
-  const r={rec:0,recOk:0,recPend:0,pagas:0,pend:0,reRec:0,byCat:{}};
+  const r={rec:0,recOk:0,recPend:0,pagas:0,pend:0,reRec:0,inv:0,invOk:0,invPend:0,byCat:{}};
   live().filter(i=>i.data.startsWith(m)).forEach(i=>{
     if(i.tipo==='receita'){r.rec+=i.valor;if(i.st==='ok')r.recOk+=i.valor;else r.recPend+=i.valor}
+    else if(isInv(i.cat)){r.inv+=i.valor;if(i.st==='ok')r.invOk+=i.valor;else r.invPend+=i.valor}   // investimento: fora das despesas
     else{
       if(i.st==='ok')r.pagas+=i.valor;else r.pend+=i.valor;
       r.reRec+=i.reembRec;
@@ -280,11 +329,11 @@ function calc(m){
   });
   const plan=orc[m]||{};
   r.prev=0;
-  new Set([...Object.keys(plan),...Object.keys(r.byCat)]).forEach(c=>{r.prev+=Math.max(plan[c]||0,r.byCat[c]||0)});
+  new Set([...Object.keys(plan),...Object.keys(r.byCat)]).forEach(c=>{if(!isInv(c))r.prev+=Math.max(plan[c]||0,r.byCat[c]||0)});
   r.gasto=Object.values(r.byCat).reduce((s,v)=>s+v,0);   // líquido de reembolsos recebidos
-  r.planTotal=Object.values(plan).reduce((s,v)=>s+(v||0),0);
-  r.saldoAtual=r.recOk-r.pagas+r.reRec;
-  r.saldoPrev=r.rec-r.prev;   // prev já está líquido dos reembolsos recebidos
+  r.planTotal=Object.entries(plan).reduce((s,[c,v])=>s+(isInv(c)?0:(v||0)),0);
+  r.saldoAtual=r.recOk-r.pagas+r.reRec-r.invOk;
+  r.saldoPrev=r.rec-r.prev-r.inv;   // prev já está líquido dos reembolsos recebidos
   Object.keys(r).forEach(k=>{if(typeof r[k]==='number')r[k]=r2(r[k])});
   return r;
 }
@@ -298,13 +347,38 @@ function showAlert(msgs){
 function alertas(pares){
   const seen=new Set(),msgs=[];
   pares.forEach(({m,cat})=>{
-    const k=m+'|'+cat;if(seen.has(k))return;seen.add(k);
+    const k=m+'|'+cat;if(seen.has(k)||isInv(cat))return;seen.add(k);
     const plan=(orc[m]||{})[cat]||0;if(!(plan>0))return;
     const g=gastoCat(m,cat),p=g/plan;
     if(g>=plan)msgs.push(`🔴 ${cat} (${mesNome(m)}): ${brl(g)} de ${brl(plan)} — orçamento ${g>plan?'estourado':'atingido'}`);
     else if(p>=0.8)msgs.push(`🟡 ${cat} (${mesNome(m)}): ${Math.round(p*100)}% do orçamento (${brl(g)} de ${brl(plan)})`);
   });
   if(msgs.length)showAlert(msgs);
+}
+
+// ---------- lançamento automático (todo dia 1º: receita em Benefícios + despesa em Mercado) ----------
+function autoLancar(){
+  const v=Number(auto.valor)||0;if(!(v>0)||!auto.desde)return 0;
+  const hojeM=hoje().slice(0,7),done=new Set(LS.get('autoDone',[])),have=new Set(items.map(i=>i.id));
+  let m=auto.desde,n=0;
+  while(m<=hojeM){
+    if(!done.has(m)){
+      [['ben','receita','Benefícios','Benefício mensal',''],['mer','despesa','Mercado','Mercado (benefício)','Benefício']].forEach(([k,t,c,ds,pg])=>{
+        const id='auto-'+k+'-'+m;
+        if(!have.has(id)){items.push({id,tipo:t,data:m+'-01',desc:ds,cat:c,pag:pg,valor:v,st:'ok',reemb:false,reembRec:0,grupo:'auto',parc:'',sync:false,rev:0});n++}
+      });
+      done.add(m);
+    }
+    m=mesAdd(m,1);
+  }
+  LS.set('autoDone',[...done]);
+  if(n){save();sync()}
+  return n;
+}
+function fillAuto(){
+  $('#autoValor').value=auto.valor?String(auto.valor).replace('.',','):'';
+  $('#autoDesde').value=auto.desde||hoje().slice(0,7);
+  $('#autoStatus').textContent=auto.valor>0?`Ativo: ${brl(auto.valor)} por mês, desde ${mesNome(auto.desde)}.`:'Desativado. Informe o valor para ativar.';
 }
 
 // ---------- sincronização ----------
@@ -338,23 +412,32 @@ async function sync(manual){
 function rowHTML(i){
   const chips=[];
   if(i.st==='pend')chips.push(`<em class="chip y">${i.tipo==='receita'?'prevista':'pendente'}</em>`);
-  if(i.tipo==='despesa'&&i.reemb)chips.push(i.reembRec>0.004?`<em class="chip g">↩ reembolsado ${brl(i.reembRec)}</em>`:`<em class="chip b">↩ aguardando reembolso</em>`);
+  if(i.tipo==='despesa'&&isInv(i.cat))chips.push('<em class="chip b">investimento</em>');
+  if(i.grupo==='auto')chips.push('<em class="chip g">automático</em>');
+  if(i.tipo==='despesa'&&i.reemb&&!isInv(i.cat))chips.push(i.reembRec>0.004?`<em class="chip g">↩ reembolsado ${brl(i.reembRec)}</em>`:`<em class="chip b">↩ aguardando reembolso</em>`);
   return `<div class="item" data-id="${i.id}"><div><b>${esc(i.desc||i.cat)}${i.parc?` <small class="mut">(${i.parc})</small>`:''}</b><span class="mut">${fmtD(i.data).slice(0,5)} · ${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}</span><div>${chips.join('')}</div></div><div class="v ${i.tipo==='receita'?'pos':''}">${i.tipo==='receita'?'+':''}${brl(i.valor)}</div></div>`;
 }
 const ord=(a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id);
 
 const fmtK=n=>n>=1000?(n/1000).toFixed(1).replace('.',',')+'k':String(Math.round(n));
 const mesCurto=m=>{const [y,mo]=m.split('-');return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')};
+let VIZ=null;
+const nfInt=n=>n>0?Math.round(n).toLocaleString('pt-BR'):'–';
+function infoHTML(i){
+  const d=VIZ.dd[i];
+  const l=VIZ.series.map((s,j)=>({s,v:d.vals[j]})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  return `<b>${mesNome(d.m)}</b> · total ${brl(d.total)}`+(l.map(x=>`<div class="ln"><span><i class="sw" style="background:${x.s.cor}"></i>${esc(x.s.k)}</span><b>${brl(x.v)}</b></div>`).join('')||'<div class="mut">Sem despesas neste mês.</div>');
+}
 function graficos(c,plan){
-  // 1) gasto líquido por categoria x planejado
-  const cs=[...new Set([...Object.keys(c.byCat),...Object.keys(plan)])]
+  // 1) gasto líquido por categoria no mês x planejado
+  const cs=[...new Set([...Object.keys(c.byCat),...Object.keys(plan).filter(k=>!isInv(k))])]
     .map(k=>({k,g:Math.max(0,r2(c.byCat[k]||0)),p:plan[k]||0})).filter(x=>x.g>0||x.p>0).sort((a,b)=>b.g-a.g||b.p-a.p);
   const mx=Math.max(1,...cs.map(x=>Math.max(x.g,x.p)));
   const g1=cs.length?cs.map(x=>{
     const pc=x.p>0?x.g/x.p:0,cls=x.p>0&&pc>=1?'bad':x.p>0&&pc>=0.8?'warn':'';
     return `<div class="cbar"><div class="t"><span>${esc(x.k)}</span><span>${brl(x.g)}${x.p>0?` de ${brl(x.p)} · ${Math.round(pc*100)}%${pc>=1?' ⚠️':''}`:' · sem planejamento'}</span></div><div class="track"><b class="${cls}" style="width:${x.g/mx*100}%"></b>${x.p>0?`<u style="left:calc(${x.p/mx*100}% - 1px)"></u>`:''}</div></div>`}).join('')
     :'<p class="mut">Sem despesas neste mês.</p>';
-  // 2) receitas x despesas nos últimos 6 meses
+  // 2) receitas x despesas nos últimos 6 meses (despesas líquidas de reembolsos e sem investimentos)
   const ms=Array.from({length:6},(_,i)=>mesAdd(mes,i-5)),dd=ms.map(m=>{const x=calc(m);return{m,rec:x.rec,des:x.gasto}});
   const top=Math.max(1,...dd.flatMap(d=>[d.rec,d.des])),W=340,H=170,pl=6,pr=6,pt=18,pb=26,cw=(W-pl-pr)/6,bw=Math.min(20,cw/2-3);
   const y=v=>pt+(H-pt-pb)*(1-v/top);
@@ -362,23 +445,25 @@ function graficos(c,plan){
   const svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Receitas e despesas dos últimos 6 meses"><line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}"/>${dd.map((d,i)=>{const x0=pl+i*cw+cw/2-bw-1;return bar(x0,d.rec,'var(--c1)')+bar(x0+bw+2,d.des,'var(--c2)')+`<text class="${d.m===mes?'cur':''}" x="${pl+i*cw+cw/2}" y="${H-8}" text-anchor="middle">${mesCurto(d.m)}</text>`}).join('')}</svg>`;
   const tab=`<details><summary>Ver em tabela</summary><table><tr><th>Mês</th><th>Receitas</th><th>Despesas</th><th>Saldo</th></tr>${dd.map(d=>`<tr><td>${mesNome(d.m)}</td><td>${brl(d.rec)}</td><td>${brl(d.des)}</td><td class="${d.rec-d.des<0?'neg':''}">${brl(r2(d.rec-d.des))}</td></tr>`).join('')}</table></details>`;
   return `<div class="card viz"><h3>Gasto por categoria</h3><div class="mut" style="margin-bottom:12px">Líquido de reembolsos. A marca preta é o valor planejado.</div>${g1}</div>
-  <div class="card viz"><h3>Receitas x despesas</h3><div class="mut">Últimos 6 meses (despesas líquidas de reembolsos)</div><div class="legend"><span><i style="background:var(--c1)"></i>Receitas</span><span><i style="background:var(--c2)"></i>Despesas</span></div>${svg}${tab}</div>`;
+  <div class="card viz"><h3>Receitas x despesas</h3><div class="mut">Últimos 6 meses (despesas líquidas de reembolsos, sem investimentos)</div><div class="legend"><span><i style="background:var(--c1)"></i>Receitas</span><span><i style="background:var(--c2)"></i>Despesas</span></div>${svg}${tab}</div>`;
 }
 function renderPainel(){
   const c=calc(mes),plan=orc[mes]||{},has=c.planTotal>0;
-  const al=Object.keys(plan).map(cat=>({cat,g:gastoCat(mes,cat),p:plan[cat]||0})).filter(x=>x.p>0&&x.g/x.p>=0.8).sort((a,b)=>b.g/b.p-a.g/a.p);
+  const al=Object.keys(plan).filter(k=>!isInv(k)).map(cat=>({cat,g:gastoCat(mes,cat),p:plan[cat]||0})).filter(x=>x.p>0&&x.g/x.p>=0.8).sort((a,b)=>b.g/b.p-a.g/a.p);
   $('#painel').innerHTML=`
   <div class="grid">
     <div class="kpi full"><span>Receitas</span><b class="pos">${brl(c.rec)}</b><small>recebidas ${brl(c.recOk)} · a receber ${brl(c.recPend)}</small></div>
     <div class="kpi"><span>Despesas pagas</span><b>${brl(c.pagas)}</b></div>
     <div class="kpi"><span>Despesas pendentes</span><b>${brl(c.pend)}</b></div>
-    <div class="kpi full"><span>Reembolsos recebidos</span><b>${brl(c.reRec)}</b></div>
+    <div class="kpi"><span>Investimentos</span><b>${brl(c.inv)}</b><small>feitos ${brl(c.invOk)} · previstos ${brl(c.invPend)}</small></div>
+    <div class="kpi"><span>Reembolsos recebidos</span><b>${brl(c.reRec)}</b></div>
   </div>
   <div class="card">
     <div class="mut">Previsão de saldo final do mês</div>
     <div class="big-n ${c.saldoPrev<0?'neg':'pos'}">${brl(c.saldoPrev)}</div>
     <div class="ln"><span>Receitas (recebidas + previstas)</span><b class="pos">+ ${brl(c.rec)}</b></div>
     <div class="ln"><span>Despesas previstas*</span><b>− ${brl(c.prev)}</b></div>
+    <div class="ln"><span>Investimentos (Aporte e Reserva)</span><b>− ${brl(c.inv)}</b></div>
     <div class="ln"><span>Saldo atual (só o que já movimentou)</span><b class="${c.saldoAtual<0?'neg':''}">${brl(c.saldoAtual)}</b></div>
     <div class="mut" style="margin-top:8px">*Por categoria vale o maior entre o planejado e o gasto real, já descontados os reembolsos recebidos. Ainda falta gastar do planejado: ${brl(Math.max(0,c.prev-c.gasto))}.</div>
     ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}
@@ -388,10 +473,10 @@ function renderPainel(){
 }
 
 function renderLista(){
-  const fs=[['todos','Todos'],['despesa','Despesas'],['receita','Receitas'],['pend','Pendentes'],['reemb','A reembolsar']];
+  const fs=[['todos','Todos'],['despesa','Despesas'],['receita','Receitas'],['inv','Investimentos'],['pend','Pendentes'],['reemb','A reembolsar']];
   $('#chips').innerHTML=fs.map(([k,n])=>`<button class="fchip ${filtro===k?'on':''}" data-f="${k}">${n}</button>`).join('');
   let L=live().filter(i=>i.data.startsWith(mes));
-  const f={despesa:i=>i.tipo==='despesa',receita:i=>i.tipo==='receita',pend:i=>i.st==='pend',reemb:i=>i.tipo==='despesa'&&i.reemb&&i.reembRec<=0.004}[filtro];
+  const f={despesa:i=>i.tipo==='despesa'&&!isInv(i.cat),inv:i=>i.tipo==='despesa'&&isInv(i.cat),receita:i=>i.tipo==='receita',pend:i=>i.st==='pend',reemb:i=>i.tipo==='despesa'&&i.reemb&&i.reembRec<=0.004}[filtro];
   if(f)L=L.filter(f);
   L.sort(ord);
   const s=L.reduce((a,i)=>{
@@ -419,7 +504,7 @@ function renderOrc(){
   const ac=document.activeElement;
   if(ac&&ac.closest&&ac.closest('#orcList')){$$('#orcList .brow').forEach(updRow);updTotaisOrc();return}
   const plan=orc[mes]||{},usadas=live().filter(i=>i.tipo==='despesa'&&i.data.startsWith(mes)).map(i=>i.cat);
-  const lista=[...new Set([...cats,...Object.keys(plan),...usadas])];
+  const lista=[...new Set([...cats,...Object.keys(plan),...usadas])].filter(c=>!isInv(c));
   $('#orcList').innerHTML=lista.map(c=>`<div class="brow" data-cat="${esc(c)}"><div class="top"><span>${esc(c)}</span><input inputmode="decimal" placeholder="0,00" value="${plan[c]?String(plan[c]).replace('.',','):''}"></div><div class="bar"><i></i></div><div class="mut sub"></div></div>`).join('');
   $$('#orcList .brow').forEach(updRow);updTotaisOrc();
 }
@@ -449,9 +534,11 @@ function setTipo(t){
   $('#cat').innerHTML=(t==='despesa'?cats:catsR).map(opt).join('');
   if((t==='despesa'?cats:catsR).includes(lc))$('#cat').value=lc;
   $$('.only-d').forEach(e=>e.hidden=t!=='despesa');
+  tgInv();
   $('#st').innerHTML=t==='despesa'?'<option value="ok">Pago</option><option value="pend">Pendente</option>':'<option value="ok">Recebida</option><option value="pend">Prevista</option>';
   prevParc();
 }
+function tgInv(){$('#rmBox').hidden=tipo!=='despesa'||isInv($('#cat').value)}   // investimento não tem reembolso
 function prevParc(){
   const n=Math.max(1,Math.min(60,parseInt($('#parc').value)||1)),v=parseValor($('#valor').value);
   $('#baseBox').hidden=n<2;
@@ -466,7 +553,7 @@ function salvar(){
   const n=Math.max(1,Math.min(60,parseInt($('#parc').value)||1));
   const cada=n>1&&$('#base').value==='cada';
   const totalAll=r2(cada?v*n:v);
-  const flag=tipo==='despesa'&&$('#rm').value==='sim';
+  const flag=tipo==='despesa'&&$('#rm').value==='sim'&&!isInv($('#cat').value);
   const split=tot=>{const tc=Math.round(tot*100),e=Math.floor(tc/n);return Array.from({length:n},(_,i)=>(i<n-1?e:tc-e*(n-1))/100)};
   const vs=split(totalAll);
   const d0=$('#data').value||hoje(),g=n>1?uid():'',t=hoje(),sel=$('#st').value;
@@ -497,7 +584,7 @@ function openEdit(id){
   const lc=d?cats:catsR;
   $('#e_cat').innerHTML=[...new Set([...lc,it.cat])].map(opt).join('');$('#e_cat').value=it.cat;
   $('#e_pag').innerHTML=PAGS.map(opt).join('');if(it.pag)$('#e_pag').value=it.pag;
-  $('#e_pagBox').hidden=!d;$('#e_reBox').hidden=!d;
+  $('#e_pagBox').hidden=!d;$('#e_reBox').hidden=!d||isInv(it.cat);
   $('#e_data').value=it.data;
   $('#e_st').innerHTML=d?'<option value="ok">Pago</option><option value="pend">Pendente</option>':'<option value="ok">Recebida</option><option value="pend">Prevista</option>';
   $('#e_st').value=it.st;
@@ -513,7 +600,7 @@ function salvaEdit(){
   if(!(v>0)){toast('Valor inválido');return}
   let re=false,rr=0;
   if(it.tipo==='despesa'){
-    re=$('#e_rm').value==='sim';
+    re=$('#e_rm').value==='sim'&&!isInv($('#e_cat').value);
     rr=re?(parseValor($('#e_rrec').value)||0):0;
     if(rr>v+0.001){toast('O reembolso recebido não pode ser maior que a despesa');return}
   }
@@ -535,6 +622,9 @@ document.body.addEventListener('click',e=>{
   const it=t.closest('.item');if(it){openEdit(it.dataset.id);return}
   const fc=t.closest('[data-f]');if(fc){filtro=fc.dataset.f;render();return}
   const gg=t.closest('[data-go]');if(gg){go(gg.dataset.go);return}
+  const mi=t.closest('[data-mi]');if(mi&&VIZ&&$('#vizInfo')){
+    $('#vizInfo').innerHTML=infoHTML(+mi.dataset.mi);
+    $$('[data-mi]').forEach(r=>r.setAttribute('fill',r.dataset.mi===mi.dataset.mi?'rgba(128,128,128,.12)':'transparent'));return}
 });
 $$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 $('#prev').onclick=()=>{mes=mesAdd(mes,-1);render()};
@@ -553,6 +643,8 @@ $('#e_delG').onclick=()=>{
   excluir(items.filter(x=>x.grupo===it.grupo&&x.data>=it.data&&!x.del));
 };
 $('#e_rm').onchange=toggleRe;
+$('#e_cat').onchange=()=>{const it=items.find(i=>i.id===editId);$('#e_reBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value)};
+$('#cat').addEventListener('change',tgInv);
 $('#e_rrAll').onclick=()=>{$('#e_rrec').value=$('#e_valor').value};
 
 $('#orcList').addEventListener('change',e=>{
@@ -603,15 +695,22 @@ $('#salvaCats').onclick=()=>{
   if(!c.length||!r.length){toast('Mantenha ao menos uma categoria de cada');return}
   cats=c;catsR=r;LS.set('cats',cats);LS.set('catsR',catsR);setTipo(tipo);$('#orcList').innerHTML='';toast('Categorias salvas');
 };
+$('#salvaAuto').onclick=()=>{
+  const v=parseValor($('#autoValor').value)||0,d=$('#autoDesde').value||hoje().slice(0,7);
+  auto={valor:v>0?r2(v):0,desde:d};LS.set('auto',auto);
+  const n=v>0?autoLancar():0;
+  toast(v>0?(n?`${n} lançamento(s) criado(s) ✓`:'Salvo ✓'):'Lançamento automático desativado');
+  fillAuto();render();
+};
 function fillCfg(){$('#url').value=url;$('#cats').value=cats.join('\n');$('#catsR').value=catsR.join('\n')}
 
 // ---------- início ----------
 $('#pag').innerHTML=PAGS.map(opt).join('');
 const lp=LS.get('lastPag','');if(PAGS.includes(lp))$('#pag').value=lp;
 $('#data').value=hoje();
-fillCfg();setTipo('despesa');render();
+autoLancar();fillCfg();fillAuto();setTipo('despesa');go('lancar');
 window.addEventListener('online',()=>sync());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!$('#data').value)$('#data').value=hoje();sync()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!$('#data').value)$('#data').value=hoje();if(autoLancar())render();sync()}});
 sync();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
