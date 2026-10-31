@@ -506,6 +506,42 @@ function graficos(c,plan){
   return `<div class="card viz"><h3>Gasto por categoria</h3><div class="mut" style="margin-bottom:12px">Líquido de reembolsos. A marca preta é o valor planejado.</div>${g1}</div>
   <div class="card viz"><h3>Receitas x despesas</h3><div class="mut">Últimos 6 meses (despesas líquidas de reembolsos, sem investimentos)</div><div class="legend"><span><i style="background:var(--c1)"></i>Receitas</span><span><i style="background:var(--c2)"></i>Despesas</span></div>${svg}${tab}</div>`;
 }
+// saldo real acumulado (todos os meses): só o que já foi recebido/pago; faturas não entram, pois são as mesmas despesas do crédito
+function saldoTotal(){
+  const t=hoje();let r=0,f=0;
+  live().forEach(i=>{
+    if(i.tipo==='receita'){if(i.st==='ok'&&i.data<=t)r+=i.valor}
+    else{if(i.st==='ok'&&i.data<=t)r-=i.valor;r+=i.reembRec||0}
+  });
+  return r2(r);
+}
+// "Quanto sobra": parte do saldo atual e deixa você marcar o que pretende pagar/receber (faturas, boletos, previstos...)
+let simOff={};   // linhas desmarcadas (só nesta sessão)
+function simLinhas(){
+  const fim=mes+'-31',L=[];
+  const sp=faturasSplit();   // a próxima fatura de cada cartão vem marcada; as futuras (parcelas) vêm desmarcadas
+  [...sp.prox.map(o=>[o,1]),...sp.fut.map(o=>[o,0])].forEach(([o,on])=>
+    L.push({k:'f|'+o.pag+'|'+o.venc,n:`Fatura ${o.pag.replace('Crédito ','')} (vence ${fmtD(o.venc).slice(0,5)})`,v:-o.aberto,def:on}));
+  const pe=live().filter(i=>i.st==='pend'&&!i.venc&&i.data<=fim);
+  const soma=f=>r2(pe.filter(f).reduce((a,i)=>a+i.valor,0));
+  const bol=soma(i=>i.tipo==='despesa'&&!isInv(i.cat)&&i.pag==='Boleto'),pv=soma(i=>i.tipo==='despesa'&&!isInv(i.cat)&&i.pag!=='Boleto'),
+        inv=soma(i=>i.tipo==='despesa'&&isInv(i.cat)),rc=soma(i=>i.tipo==='receita');
+  const reemb=r2(live().filter(i=>i.tipo==='despesa'&&i.reemb&&i.data<=fim&&i.reembRec<=0.004).reduce((a,i)=>a+i.valor,0));
+  if(bol)L.push({k:'bol',n:'Boletos pendentes',v:-bol});
+  if(pv)L.push({k:'prev',n:'Pix/Dinheiro previstos',v:-pv});
+  if(inv)L.push({k:'inv',n:'Investimentos previstos',v:-inv});
+  if(rc)L.push({k:'rec',n:'Receitas a receber',v:rc});
+  return L;
+}
+function simCard(){
+  const L=simLinhas(),base=saldoTotal(),on=l=>simOff[l.k]===undefined?(l.def!==0):simOff[l.k]===1;
+  if(!L.length)return '';
+  const tot=r2(base+L.filter(l=>on(l)).reduce((a,l)=>a+l.v,0));
+  return `<div class="card" id="sim"><b>Quanto vai sobrar</b><div class="mut">Parte do saldo atual. Desmarque o que ainda não vai pagar para simular.</div>
+    <div class="ln"><span>Saldo atual</span><b>${brl(base)}</b></div>
+    ${L.map(l=>`<label class="ln" style="align-items:center"><span><input type="checkbox" data-sim="${esc(l.k)}" ${on(l)?'checked':''} style="width:auto;margin-right:8px">${esc(l.n)}</span><b class="${l.v>0?'pos':''}">${l.v>0?'+':'−'} ${brl(Math.abs(l.v))}</b></label>`).join('')}
+    <div class="ln"><span><b>Sobra</b></span><b class="${tot<0?'neg':'pos'}">${brl(tot)}</b></div></div>`;
+}
 function faturasGrupos(){
   const g={};
   live().filter(x=>x.tipo==='despesa'&&x.venc).forEach(x=>{
@@ -521,7 +557,7 @@ function faturasSplit(){
 }
 function kpiFaturas(){
   const f=faturasSplit();if(!f.prox.length)return '';
-  return `<div class="kpi full"><span>Próximas faturas (a pagar)</span><b>${brl(f.tp)}</b><small>${f.prox.map(o=>`${esc(o.pag.replace('Crédito ',''))} ${brl(o.aberto)} (vence ${fmtD(o.venc).slice(0,5)})`).join(' · ')}${f.tf>0?` · mais ${brl(f.tf)} em faturas futuras`:''}</small></div>`;
+  return `<div class="kpi full"><span>Próximas faturas (só demonstrativo)</span><b>${brl(f.tp)}</b><small>já estão em despesas pendentes, não somam de novo · ${f.prox.map(o=>`${esc(o.pag.replace('Crédito ',''))} ${brl(o.aberto)} (vence ${fmtD(o.venc).slice(0,5)})`).join(' · ')}${f.tf>0?` · mais ${brl(f.tf)} em faturas futuras`:''}</small></div>`;
 }
 function rodapeFat(){
   const f=faturasSplit();
@@ -543,6 +579,7 @@ function renderPainel(){
   const al=Object.keys(plan).filter(k=>!isInv(k)).map(cat=>({cat,g:gastoCat(mes,cat),p:plan[cat]||0})).filter(x=>x.p>0&&x.g/x.p>=0.8).sort((a,b)=>b.g/b.p-a.g/a.p);
   $('#painel').innerHTML=`
   <div class="grid">
+    <div class="kpi full"><span>Saldo atual</span><b class="${saldoTotal()<0?'neg':'pos'}">${brl(saldoTotal())}</b><small>acumulado de todos os meses · só o que já foi recebido e pago</small></div>
     <div class="kpi full"><span>Receitas</span><b class="pos">${brl(c.rec)}</b><small>recebidas ${brl(c.recOk)} · a receber ${brl(c.recPend)}</small></div>
     <div class="kpi"><span>Despesas pagas</span><b>${brl(c.pagas)}</b></div>
     <div class="kpi"><span>Despesas pendentes</span><b>${brl(c.pend)}</b></div>
@@ -550,13 +587,14 @@ function renderPainel(){
     <div class="kpi"><span>Reembolsos recebidos</span><b>${brl(c.reRec)}</b></div>
     ${kpiFaturas()}
   </div>
+  ${simCard()}
   <div class="card">
     <div class="mut">Previsão de saldo final do mês</div>
     <div class="big-n ${c.saldoPrev<0?'neg':'pos'}">${brl(c.saldoPrev)}</div>
     <div class="ln"><span>Receitas (recebidas + previstas)</span><b class="pos">+ ${brl(c.rec)}</b></div>
     <div class="ln"><span>Despesas previstas*</span><b>− ${brl(c.prev)}</b></div>
     <div class="ln"><span>Investimentos (Aporte e Reserva)</span><b>− ${brl(c.inv)}</b></div>
-    <div class="ln"><span>Saldo atual (só o que já movimentou)</span><b class="${c.saldoAtual<0?'neg':''}">${brl(c.saldoAtual)}</b></div>
+    <div class="ln"><span>Saldo do mês até agora</span><b class="${c.saldoAtual<0?'neg':''}">${brl(c.saldoAtual)}</b></div>
     <div class="mut" style="margin-top:8px">*Por categoria vale o maior entre o planejado e o gasto real, já descontados os reembolsos recebidos. Ainda falta gastar do planejado: ${brl(Math.max(0,c.prev-c.gasto))}.</div>
     ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}
   </div>
@@ -629,6 +667,7 @@ function go(a){
   window.scrollTo(0,0);render();
 }
 
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.sim;if(k===undefined)return;simOff[k]=e.target.checked?1:0;renderPainel()});
 // ---------- formulário de lançamento ----------
 function setTipo(t){
   tipo=t;
