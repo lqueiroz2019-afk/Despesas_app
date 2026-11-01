@@ -1,4 +1,4 @@
-const CACHE = 'despesas-v12';
+const CACHE = 'despesas-v15';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
