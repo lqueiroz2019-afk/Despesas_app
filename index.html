@@ -310,7 +310,7 @@ function fatura(c,data){
   const [y,m,d]=data.split('-').map(Number),ym=`${y}-${p2(m)}`,fm=d<=c.fecha?ym:mesAdd(ym,1),vm=c.vence>c.fecha?fm:mesAdd(fm,1);
   return{fecha:`${fm}-${p2(c.fecha)}`,venc:`${vm}-${p2(c.vence)}`};
 }
-const INV=['Aporte','Reserva'], isInv=c=>INV.includes(c);   // essas categorias contam como investimento, não como despesa
+const INV=['Aporte','Reserva'], isInv=c=>/^\s*(aporte|reserva)/i.test(String(c));   // Aporte, Reserva, Reservas, "Reserva de emergência"...   // essas categorias contam como investimento, não como despesa
 
 // ---------- estado ----------
 // item: {id,tipo:'despesa'|'receita',data,desc,cat,pag,valor,st:'ok'|'pend',reemb,reembRec,grupo,parc,sync,rev,del}
@@ -467,20 +467,24 @@ async function sync(manual){
   const pend=items.filter(i=>!i.sync),od=orcDirty,orev=orcRev,cd=cfgDirty,crev=cfgRev;
   if(!pend.length&&!od&&!cd){if(manual)toast('Tudo sincronizado');return}
   syncing=true;
+  const LOTE=400,lotes=Math.max(1,Math.ceil(pend.length/LOTE));   // muitos lançamentos (ex.: importação) vão em lotes
   try{
-    const body={action:'sync',items:pend.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',del:!!i.del}))};
-    if(od)body.orc=flatOrc();
-    if(cd)body.config=cfgObj();
-    await api(body);
-    const snap=new Map(pend.map(i=>[i.id,i.rev||0]));
-    items.forEach(i=>{if(snap.has(i.id)&&(i.rev||0)===snap.get(i.id))i.sync=true});
+    for(let k=0;k<lotes;k++){
+      const part=pend.slice(k*LOTE,(k+1)*LOTE);
+      const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',del:!!i.del}))};
+      if(k===0){if(od)body.orc=flatOrc();if(cd)body.config=cfgObj()}
+      if(lotes>1)$('#status').textContent=`Enviando ${Math.min((k+1)*LOTE,pend.length)} de ${pend.length}...`;
+      await api(body);
+      const snap=new Map(part.map(i=>[i.id,i.rev||0]));
+      items.forEach(i=>{if(snap.has(i.id)&&(i.rev||0)===snap.get(i.id))i.sync=true});
+      if(k===0){if(od&&orcRev===orev)orcDirty=false;if(cd&&cfgRev===crev){cfgDirty=false;LS.set('cfgDirty',false)}}
+      save();
+    }
     items=items.filter(i=>!(i.del&&i.sync));
-    if(od&&orcRev===orev)orcDirty=false;
-    if(cd&&cfgRev===crev){cfgDirty=false;LS.set('cfgDirty',false)}
     save();saveOrc();
     $('#status').textContent='Última sincronização: '+new Date().toLocaleString('pt-BR');
     if(manual)toast('Sincronizado ✓');
-  }catch(e){$('#status').textContent='Falha ao sincronizar: '+e.message;if(manual)toast('Falha ao sincronizar')}
+  }catch(e){$('#status').textContent='Falha ao sincronizar (o que já foi enviado fica salvo; toque de novo para continuar): '+e.message;if(manual)toast('Falha ao sincronizar')}
   syncing=false;render();
 }
 
@@ -524,13 +528,18 @@ function graficos(c,plan){
   <div class="card viz"><h3>Receitas x despesas</h3><div class="mut">Últimos 6 meses (despesas líquidas de reembolsos, sem investimentos)</div><div class="legend"><span><i style="background:var(--c1)"></i>Receitas</span><span><i style="background:var(--c2)"></i>Despesas</span></div>${svg}${tab}</div>`;
 }
 // saldo real acumulado (todos os meses): só o que já foi recebido/pago; faturas não entram, pois são as mesmas despesas do crédito
-function saldoTotal(){
-  const t=hoje();let r=0,f=0;
+function saldoTotal(antes){   // antes='AAAA-MM': só o que veio antes desse mês (saldo inicial)
+  const t=hoje(),lim=antes?antes+'-01':'9999';let r=0;
   live().forEach(i=>{
+    if(i.data>=lim)return;
     if(i.tipo==='receita'){if(i.st==='ok'&&i.data<=t)r+=i.valor}
     else{if(i.st==='ok'&&i.data<=t)r-=i.valor;r+=i.reembRec||0}
   });
   return r2(r);
+}
+// pendências de meses anteriores (faturas e boletos em aberto, receitas previstas) que ainda vão mexer no caixa
+function pendAnteriores(ym){
+  return r2(live().filter(i=>i.st==='pend'&&i.data<ym+'-01').reduce((a,i)=>a+(i.tipo==='receita'?i.valor:-i.valor),0));
 }
 function faturasGrupos(){
   const g={};
@@ -566,6 +575,7 @@ function faturasCard(){
 }
 function renderPainel(){
   const c=calc(mes),plan=orc[mes]||{},has=c.planTotal>0;
+  const ini=saldoTotal(mes),pa=pendAnteriores(mes),fim=r2(ini+pa+c.saldoPrev);
   const al=Object.keys(plan).filter(k=>!isInv(k)).map(cat=>({cat,g:gastoCat(mes,cat),p:plan[cat]||0})).filter(x=>x.p>0&&x.g/x.p>=0.8).sort((a,b)=>b.g/b.p-a.g/a.p);
   $('#painel').innerHTML=`
   <div class="grid">
@@ -573,11 +583,13 @@ function renderPainel(){
   </div>
   <div class="card">
     <div class="mut">Previsão de saldo final do mês</div>
-    <div class="big-n ${c.saldoPrev<0?'neg':'pos'}">${brl(c.saldoPrev)}</div>
+    <div class="big-n ${fim<0?'neg':'pos'}">${brl(fim)}</div>
+    <div class="ln"><span>Saldo inicial do mês</span><b class="${ini<0?'neg':''}">${brl(ini)}</b></div>
+    ${pa?`<div class="ln"><span>Pendências de meses anteriores</span><b class="${pa<0?'neg':'pos'}">${pa<0?'−':'+'} ${brl(Math.abs(pa))}</b></div>`:''}
     <div class="ln"><span>Receitas (recebidas + previstas)</span><b class="pos">+ ${brl(c.rec)}</b></div>
     <div class="ln"><span>Despesas previstas*</span><b>− ${brl(c.prev)}</b></div>
     <div class="ln"><span>Investimentos (Aporte e Reserva)</span><b>− ${brl(c.inv)}</b></div>
-    <div class="ln"><span>Saldo do mês até agora</span><b class="${c.saldoAtual<0?'neg':''}">${brl(c.saldoAtual)}</b></div>
+    <div class="ln"><span>Resultado do mês até agora (sem saldo inicial)</span><b class="${c.saldoAtual<0?'neg':''}">${brl(c.saldoAtual)}</b></div>
     <div class="mut" style="margin-top:8px">*Por categoria vale o maior entre o planejado e o gasto real, já descontados os reembolsos recebidos. Ainda falta gastar do planejado: ${brl(Math.max(0,c.prev-c.gasto))}.</div>
     ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}
   </div>
@@ -913,7 +925,7 @@ function fillRn(){$('#rnOld').innerHTML=[...new Set([...cats,...catsR])].map(opt
 $('#renomeia').onclick=()=>{
   const a=$('#rnOld').value,b=$('#rnNew').value.trim();
   if(!b||a===b){toast('Digite o novo nome');return}
-  if(INV.includes(a)||INV.includes(b)){toast('Aporte e Reserva têm regra própria e não podem ser renomeadas');return}
+  if(isInv(a)!==isInv(b)){toast('Nomes que começam com Aporte ou Reserva são investimentos: só pode renomear entre eles');return}
   if([...cats,...catsR].includes(b)&&!confirm(`Já existe "${b}". Juntar "${a}" nela?`))return;
   let n=0;items.forEach(i=>{if(i.cat===a){i.cat=b;touch(i);n++}});
   const sw=l=>[...new Set(l.map(x=>x===a?b:x))];
