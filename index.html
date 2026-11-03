@@ -245,6 +245,12 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
     <p class="mut" id="status"></p>
   </div>
   <div class="card">
+    <b>Registro de falhas</b>
+    <p class="mut" id="armaz"></p>
+    <div id="logFalhas"></div>
+    <div class="row2"><button class="btn sec" id="logCopia">Copiar</button><button class="btn sec" id="logLimpa">Limpar</button></div>
+  </div>
+  <div class="card">
     <b>Backup em arquivo</b>
     <button class="btn sec" id="exportar">Exportar arquivo (.json)</button>
     <button class="btn sec" id="importar">Importar arquivo</button>
@@ -325,7 +331,41 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// registro de falhas (sincronização, gravação, importação) – últimas 50
+const LOGMAX=50;
+function logFalha(origem,msg,det){
+  try{
+    const L=JSON.parse(localStorage.getItem('falhas')||'[]');
+    L.unshift({t:new Date().toISOString(),o:origem,m:String(msg),d:det||''});
+    localStorage.setItem('falhas',JSON.stringify(L.slice(0,LOGMAX)));
+  }catch(e){}
+  try{if(typeof renderLog==='function')renderLog()}catch(e){}
+}
+let avisouGravacao=false;
+function avisoArmazenamento(msg){
+  logFalha('Armazenamento',msg);
+  if(avisouGravacao)return;avisouGravacao=true;
+  const mostra=()=>{const b=document.createElement('div');b.id='storageError';b.setAttribute('role','alert');
+    b.style.cssText='position:fixed;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:9999;background:#7f1d1d;color:#fff;border-radius:12px;padding:12px 14px;font:14px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35)';
+    b.innerHTML='<b>Não consegui salvar no aparelho.</b><br>'+msg+' Faça um backup agora em Ajustes (Exportar) para não perder lançamentos.<br><button style="margin-top:8px;border:0;border-radius:8px;padding:8px 14px;font-weight:700" onclick="this.parentNode.remove();avisouGravacao=false">Entendi</button>';
+    document.body.appendChild(b)};
+  if(document.body)mostra();else document.addEventListener('DOMContentLoaded',mostra,{once:true});
+}
+const LS={
+  get:(k,d)=>{
+    let v=null;
+    try{v=localStorage.getItem(k)}catch(e){avisoArmazenamento('O navegador bloqueou a leitura dos dados.');return d}
+    if(!v)return d;
+    try{return JSON.parse(v)}
+    catch(e){   // dado corrompido: guarda uma cópia para recuperação em vez de sobrescrever em silêncio
+      try{if(!localStorage.getItem('corrompido_'+k))localStorage.setItem('corrompido_'+k,v)}catch(_){}
+      logFalha('Armazenamento','Dado "'+k+'" ilegível; usei o padrão e guardei uma cópia.');return d}
+  },
+  set:(k,v)=>{
+    try{localStorage.setItem(k,JSON.stringify(v))}
+    catch(e){avisoArmazenamento(e&&e.name==='QuotaExceededError'?'O armazenamento do aparelho está cheio.':'Falha ao gravar ('+(e&&e.message||'erro')+').')}
+  }
+};
 const DEF_CATS=['Alimentação','Mercado','Transporte','Moradia','Saúde','Lazer','Educação','Contas','Compras','Aporte','Reserva','Outros'];
 const DEF_CATS_R=['Salário','Benefícios','Freelance','Rendimentos','Outros'];
 const PAGS_BASE=['À vista','Boleto'];
@@ -474,9 +514,32 @@ function fillAuto(){
 }
 
 // ---------- sincronização ----------
-async function api(body){
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:senha,...body}),redirect:'follow'});
-  const j=await r.json();if(!j.ok)throw new Error(j.error||'erro');return j;
+class ErroSync extends Error{constructor(msg,tentar){super(msg);this.tentar=!!tentar}}
+const MSG_SCRIPT={'senha incorreta':'Senha incorreta: confira a senha em Ajustes (precisa ser igual à do script).','defina a SENHA no script':'O script ainda está com a senha de exemplo. Defina a SENHA no Apps Script e implante de novo.','acesso negado':'Acesso negado pelo script.','requisição inválida':'O script recebeu um pedido inválido.','ação inválida':'O script não reconheceu a ação (versão antiga do script?).'};
+async function api1(body){
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
+  let r,txt;
+  try{
+    r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:senha,...body}),redirect:'follow',signal:ac.signal});
+    txt=await r.text();
+  }catch(e){
+    if(e&&e.name==='AbortError')throw new ErroSync('Tempo esgotado: a conexão com o Google está lenta.',true);
+    throw new ErroSync('Sem conexão com o Google (internet instável ou URL incorreta).',true);
+  }finally{clearTimeout(to)}
+  let j;
+  try{j=JSON.parse(txt)}
+  catch(e){throw new ErroSync(`Resposta inesperada do Google (HTTP ${r.status}). Confira se o script está implantado como "Qualquer pessoa" e se a URL termina em /exec.`,false)}
+  if(!j.ok){const m=String(j.error||'erro');throw new ErroSync(MSG_SCRIPT[m]||('O script respondeu: '+m),/lock|timeout|tempo/i.test(m))}
+  return j;
+}
+async function api(body,rotulo){
+  let ult;
+  for(let t=0;t<3;t++){   // até 3 tentativas em falhas de rede/tempo; erros de senha ou de script não repetem
+    try{return await api1(body)}
+    catch(e){ult=e;if(!(e instanceof ErroSync)||!e.tentar||t===2)break;await new Promise(r=>setTimeout(r,1500*(t+1)))}
+  }
+  logFalha(rotulo||'Sincronização',ult.message,body&&body.items?`${body.items.length} lançamento(s) no lote`:'');
+  throw ult;
 }
 const flatOrc=()=>Object.entries(orc).flatMap(([mes,o])=>Object.entries(o).map(([cat,valor])=>({mes,cat,valor})));
 const cfgObj=()=>({cats,catsR,cartoes,auto});
@@ -504,7 +567,7 @@ async function sync(manual){
       const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',del:!!i.del}))};
       if(k===0){if(od)body.orc=flatOrc();if(cd)body.config=cfgObj()}
       if(lotes>1)$('#status').textContent=`Enviando ${Math.min((k+1)*LOTE,pend.length)} de ${pend.length}...`;
-      await api(body);
+      await api(body,'Sincronização'+(lotes>1?` (lote ${k+1}/${lotes})`:''));
       const snap=new Map(part.map(i=>[i.id,i.rev||0]));
       items.forEach(i=>{if(snap.has(i.id)&&(i.rev||0)===snap.get(i.id))i.sync=true});
       if(k===0){if(od&&orcRev===orev)orcDirty=false;if(cd&&cfgRev===crev){cfgDirty=false;LS.set('cfgDirty',false)}}
@@ -514,7 +577,7 @@ async function sync(manual){
     save();saveOrc();
     $('#status').textContent='Última sincronização: '+new Date().toLocaleString('pt-BR');
     if(manual)toast('Sincronizado ✓');
-  }catch(e){$('#status').textContent='Falha ao sincronizar (o que já foi enviado fica salvo; toque de novo para continuar): '+e.message;if(manual)toast('Falha ao sincronizar')}
+  }catch(e){$('#status').textContent='Falha ao sincronizar: '+e.message+(lotes>1?' O que já foi enviado fica salvo; toque de novo para continuar.':' Seus lançamentos continuam salvos no aparelho e serão reenviados.');if(manual)toast(e.message,4500)}
   syncing=false;render();
 }
 
@@ -1022,28 +1085,61 @@ $('#salvaUrl').onclick=()=>{url=$('#url').value.trim();senha=$('#senha').value;L
 $('#restaurar').onclick=async()=>{
   if(!url){toast('Configure a URL primeiro');return}
   try{
-    const j=await api({action:'list'});
+    const j=await api({action:'list'},'Restaurar da planilha');
     const have=new Set(items.map(i=>i.id));let n=0;
-    (j.items||[]).forEach(x=>{if(!have.has(x.id)){items.push({reemb:0,reembRec:0,grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:true,rev:0});n++}});
+    (j.items||[]).forEach(x=>{if(!have.has(x.id)&&itemValido(x)){items.push({reemb:0,reembRec:0,grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:true,rev:0});n++}});
     (j.orc||[]).forEach(o=>{orc[o.mes]=orc[o.mes]||{};if(orc[o.mes][o.cat]===undefined)orc[o.mes][o.cat]=Number(o.valor)||0});
     migPag();aplicaCfg(j.config);fillCfg();fillAuto();fillPag();setTipo(tipo);
     save();saveOrc();if(aba==='orc')$('#orcList').innerHTML='';render();toast(n+' lançamento(s) restaurado(s)');
-  }catch(e){toast('Falha ao restaurar: '+e.message,4000)}
+  }catch(e){toast('Falha ao restaurar: '+e.message,4500)}
 };
 $('#exportar').onclick=()=>{
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify({v:3,cats,catsR,cartoes,auto,orc,items:live()},null,1)],{type:'application/json'}));
   a.download='despesas-'+hoje()+'.json';a.click();
 };
-$('#importar').onclick=()=>$('#arq').click();
-$('#arq').onchange=async e=>{
+function renderLog(){
+  const el=document.getElementById('logFalhas');if(!el)return;
+  let L=[];try{L=JSON.parse(localStorage.getItem('falhas')||'[]')}catch(e){}
+  el.innerHTML=L.length?L.map(x=>`<div class="ln" style="display:block"><small class="mut">${new Date(x.t).toLocaleString('pt-BR')} · ${esc(x.o)}</small><br>${esc(x.m)}${x.d?` <small class="mut">(${esc(x.d)})</small>`:''}</div>`).join(''):'<p class="mut">Nenhuma falha registrada.</p>';
+}
+$('#logCopia').onclick=async()=>{
+  let L=[];try{L=JSON.parse(localStorage.getItem('falhas')||'[]')}catch(e){}
+  const t=L.map(x=>`${new Date(x.t).toLocaleString('pt-BR')} | ${x.o} | ${x.m}${x.d?' | '+x.d:''}`).join('\n')||'Nenhuma falha registrada.';
+  try{await navigator.clipboard.writeText(t);toast('Registro copiado')}catch(e){toast('Não consegui copiar')}
+};
+$('#logLimpa').onclick=()=>{try{localStorage.removeItem('falhas')}catch(e){}renderLog();toast('Registro limpo')};
+async function infoArmaz(){
+  const el=document.getElementById('armaz');if(!el)return;
+  let t='';
   try{
-    const j=JSON.parse(await e.target.files[0].text());const have=new Set(items.map(i=>i.id));let n=0;
-    (j.items||[]).forEach(x=>{if(!have.has(x.id)){items.push({tipo:'despesa',st:'ok',reemb:false,reembRec:0,grupo:'',parc:'',...x,reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:false,rev:0});n++}});
+    if(navigator.storage&&navigator.storage.persist){const ja=navigator.storage.persisted?await navigator.storage.persisted():false;const ok=ja||await navigator.storage.persist();t='Armazenamento protegido contra limpeza automática: '+(ok?'sim':'não')+'.'}
+    if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate();t+=` Em uso: ${Math.round((e.usage||0)/1024)} KB.`}
+  }catch(e){}
+  el.textContent=t||'Falhas de sincronização e de gravação aparecem aqui.';
+}
+window.addEventListener('error',e=>logFalha('App',(e.message||'erro')+(e.lineno?` (linha ${e.lineno})`:'')));
+window.addEventListener('unhandledrejection',e=>logFalha('App',(e.reason&&e.reason.message)||String(e.reason||'erro')));
+$('#importar').onclick=()=>$('#arq').click();
+const itemValido=x=>x&&typeof x==='object'&&x.id&&/^\d{4}-\d{2}-\d{2}$/.test(String(x.data))&&Number.isFinite(Number(x.valor))&&Number(x.valor)>=0;
+$('#arq').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let j;
+  try{j=JSON.parse(await f.text())}catch(err){logFalha('Importação','Arquivo "'+f.name+'" não é um JSON válido.');toast('Arquivo inválido: não é um backup em JSON.',4500);return}
+  if(!j||typeof j!=='object'||(!Array.isArray(j.items)&&!j.orc)){logFalha('Importação','Arquivo "'+f.name+'" não parece um backup do app.');toast('Esse arquivo não parece um backup do app.',4500);return}
+  try{
+    const have=new Set(items.map(i=>i.id));let n=0,ign=0,dup=0;
+    (j.items||[]).forEach(x=>{
+      if(!itemValido(x)){ign++;return}
+      if(have.has(x.id)){dup++;return}
+      items.push({tipo:'despesa',st:'ok',reemb:false,reembRec:0,grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:false,rev:0});n++;
+    });
     migPag();aplicaCfg(j);
     Object.entries(j.orc||{}).forEach(([m,o])=>{orc[m]=orc[m]||{};Object.entries(o).forEach(([c,v])=>{if(orc[m][c]===undefined)orc[m][c]=v})});
-    orcDirty=true;orcRev++;cfgDirty=true;cfgRev++;LS.set('cfgDirty',true);save();saveOrc();fillCfg();fillAuto();fillPag();setTipo(tipo);render();toast(n+' importado(s)');sync();
-  }catch(err){toast('Arquivo inválido')}
+    orcDirty=true;orcRev++;cfgDirty=true;cfgRev++;LS.set('cfgDirty',true);save();saveOrc();fillCfg();fillAuto();fillPag();setTipo(tipo);render();
+    if(ign)logFalha('Importação',`${ign} linha(s) ignorada(s) por dados inválidos em "${f.name}".`);
+    toast(`${n} importado(s)`+(dup?` · ${dup} já existiam`:'')+(ign?` · ${ign} ignorado(s) por dados inválidos`:''),4000);sync();
+  }catch(err){logFalha('Importação',err.message);toast('Falha ao importar: '+err.message,4500)}
 };
 $('#salvaCats').onclick=()=>{
   const lines=s=>s.split('\n').map(x=>x.trim()).filter(Boolean);
@@ -1088,7 +1184,7 @@ function fillCfg(){fillCartoes();fillRn();$('#url').value=url;$('#senha').value=
 // ---------- início ----------
 fillPag();
 $('#data').value=hoje();
-migPag();autoLancar();fillCfg();fillAuto();setTipo('despesa');go('lancar');
+renderLog();infoArmaz();migPag();autoLancar();fillCfg();fillAuto();setTipo('despesa');go('lancar');
 window.addEventListener('online',()=>sync());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!$('#data').value)$('#data').value=hoje();if(autoLancar())render();sync()}});
 sync();
