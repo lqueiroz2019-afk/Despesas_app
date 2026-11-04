@@ -165,10 +165,24 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 .est .er{display:flex;justify-content:space-between;gap:10px;font-size:14px;align-items:baseline}.est .er small{color:var(--mut);font-size:12px}
 .est .up{color:var(--bad)}.est .dn{color:var(--ok)}.est .tag{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:1px 6px;margin-left:4px}
 .est .pbtn{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#aviso{margin:8px 12px 0;padding:10px 12px;border-radius:12px;background:#fff4d6;color:#5b4300;font-size:13px;display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid #f1d98a}
+@media(prefers-color-scheme:dark){#aviso{background:#3a2e0b;color:#ffe9a8;border-color:#6b5513}}
+#aviso button{border:0;background:none;color:inherit;font-weight:700;font-size:13px;padding:8px 4px}
+.vh{border-radius:18px;padding:12px 10px 8px;margin:10px 0 4px;text-align:center;background:rgba(229,56,79,.10);transition:background .25s}
+.vh.rec{background:rgba(18,160,92,.13)}
+.vh label{display:block;margin:0;font-size:12px;color:var(--mut)}
+.vh input{font-size:44px;font-weight:800;text-align:center;background:transparent!important;border:0!important;box-shadow:none!important;width:100%;color:var(--bad);padding:2px 0;letter-spacing:-.5px}
+.vh.rec input{color:var(--ok)}
+.vh input::placeholder{color:var(--mut);opacity:.45}
+.dh{display:flex;justify-content:space-between;align-items:baseline;padding:14px 2px 4px;font-size:12px;font-weight:700;color:var(--mut)}
+.dh:first-child{padding-top:2px}.dh b{font-size:12px}
+.fprox{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding:12px 14px}
+.fprox span{display:block;font-size:12px;color:var(--mut)}.fprox b{font-size:20px}.fprox small{color:var(--mut);font-size:11px}
 </style>
 </head>
 <body class="t-cristal">
 <header><h1>Despesas</h1><span id="sync"></span></header>
+<div id="aviso" hidden></div>
 <div id="mnav"><button id="prev">‹</button><div id="mcenter"><b id="mesLabel"></b><span id="hojeBtn" hidden>ir para hoje</span></div><button id="next">›</button></div>
 <div id="mpick" hidden><div class="sheet"><div class="yr"><button id="mpA">‹</button><b id="mpY"></b><button id="mpP">›</button></div><div class="ms" id="mpM"></div><button class="btn sec" id="mpHoje">Mês atual</button></div></div>
 <main>
@@ -182,8 +196,7 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 <section id="v-lancar" class="view on">
   <div class="card">
     <div class="seg" id="seg"><button data-t="despesa" class="on">Despesa</button><button data-t="receita">Receita</button></div>
-    <label>Valor (R$)</label>
-    <input id="valor" class="big" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+    <div class="vh" id="vh"><label for="valor">Valor (R$)</label><input id="valor" class="big" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
     <label>Descrição</label>
     <input id="desc" type="text" placeholder="Ex.: Almoço" autocomplete="off">
     <div class="row2">
@@ -331,6 +344,29 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// aviso de backup: pendências antigas ou nenhum backup recente
+function renderAviso(pend){
+  const el=document.getElementById('aviso');if(!el)return;
+  const DIA=864e5,agora=Date.now();let msg='',acao='',alvo='';
+  if(url){
+    let desde=LS.get('pendDesde',0);
+    if(pend>0&&!desde){desde=agora;LS.set('pendDesde',desde)}
+    if(pend===0&&desde){LS.set('pendDesde',0);desde=0}
+    const dias=desde?Math.floor((agora-desde)/DIA):0;
+    if(pend>0&&dias>=7){msg=`${pend} alteração(ões) sem backup no Google há ${dias} dias.`;acao='Sincronizar';alvo='sync'}
+  }else if(items.length>=20){
+    const ult=LS.get('lastExport',0),dias=ult?Math.floor((agora-ult)/DIA):null;
+    if(dias===null||dias>=30){msg=dias===null?'Você ainda não fez nenhum backup dos seus lançamentos.':`Seu último backup em arquivo foi há ${dias} dias.`;acao='Fazer backup';alvo='exp'}
+  }
+  if(!msg||LS.get('avisoAte',0)>agora){el.hidden=true;return}
+  el.hidden=false;el.innerHTML=`<span>⚠️ ${esc(msg)}</span><span><button data-av="${alvo}">${acao}</button><button data-av="x" aria-label="Dispensar">✕</button></span>`;
+}
+document.getElementById('aviso').addEventListener('click',e=>{
+  const b=e.target.closest('[data-av]');if(!b)return;
+  if(b.dataset.av==='sync'){sync(true)}
+  else if(b.dataset.av==='exp'){go('cfg');setTimeout(()=>$('#exportar').scrollIntoView({block:'center'}),50)}
+  else{LS.set('avisoAte',Date.now()+864e5);renderAviso(0)}   // dispensa por 1 dia
+});
 // registro de falhas (sincronização, gravação, importação) – últimas 50
 const LOGMAX=50;
 function logFalha(origem,msg,det){
@@ -435,7 +471,7 @@ document.addEventListener('focusin',e=>{const el=e.target;if(el instanceof HTMLI
 function parseValor(s){s=String(s).trim().replace(/[R$\s]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return parseFloat(s)}
 function toast(m,ms=2200){const t=$('#toast');t.textContent=m;t.classList.remove('act');undoFn=null;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),ms)}
 let undoFn=null;
-function toastUndo(m,fn){const t=$('#toast');t.innerHTML=esc(m)+'<button id="undoBtn">Desfazer</button>';t.classList.add('show','act');undoFn=fn;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},5000)}
+function toastUndo(m,fn,ms=5000){const t=$('#toast');t.innerHTML=esc(m)+'<button id="undoBtn">Desfazer</button>';t.classList.add('show','act');undoFn=fn;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.classList.remove('show','act');undoFn=null},ms)}
 function marcarOk(id){
   const it=items.find(i=>i.id===id);if(!it||it.st==='ok')return;
   it.st='ok';touch(it);save();render();sync();
@@ -582,13 +618,13 @@ async function sync(manual){
 }
 
 // ---------- renderização ----------
-function rowHTML(i,ano=false){
+function rowHTML(i,ano=false,semData=false){
   const chips=[];
   if(i.st==='pend')chips.push(`<em class="chip y">${i.tipo==='receita'?'prevista':'pendente'}</em>`);
   if(i.tipo==='despesa'&&isInv(i.cat))chips.push('<em class="chip b">investimento</em>');
   if(i.grupo==='auto')chips.push('<em class="chip g">automático</em>');
   if(i.tipo==='despesa'&&i.reemb&&!isInv(i.cat))chips.push(i.reembRec>0.004?`<em class="chip g">↩ reembolsado ${brl(i.reembRec)}</em>`:`<em class="chip b">↩ aguardando reembolso</em>`);
-  return `<div class="item" data-id="${i.id}"><div><b>${esc(i.desc||i.cat)}${i.parc?` <small class="mut">(${i.parc})</small>`:''}</b><span class="mut">${ano?fmtD(i.data):fmtD(i.data).slice(0,5)} · ${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}${i.venc?' · vence '+fmtD(i.venc).slice(0,5):''}</span><div>${chips.join('')}</div></div><div class="rt"><div class="v ${i.tipo==='receita'?'pos':isInv(i.cat)?'inv':''}">${i.tipo==='receita'?'+':''}${brl(i.valor)}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
+  return `<div class="item" data-id="${i.id}"><div><b>${esc(i.desc||i.cat)}${i.parc?` <small class="mut">(${i.parc})</small>`:''}</b><span class="mut">${semData?'':(ano?fmtD(i.data):fmtD(i.data).slice(0,5))+' · '}${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}${i.venc?' · vence '+fmtD(i.venc).slice(0,5):''}</span><div>${chips.join('')}</div></div><div class="rt"><div class="v ${i.tipo==='receita'?'pos':isInv(i.cat)?'inv':''}">${i.tipo==='receita'?'+':''}${brl(i.valor)}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
 }
 const ord=(a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id);
 
@@ -655,16 +691,15 @@ function rodapeFat(){
   const f=faturasSplit();
   return `<div class="ln"><span>Próximas faturas (a pagar)</span><b>${brl(f.tp)}</b></div>${f.tf>0?`<div class="ln"><span>Faturas futuras (parcelas)</span><b>${brl(f.tf)}</b></div>`:''}`;
 }
-function faturasCard(){
-  const L=faturasGrupos().filter(o=>o.venc.startsWith(mes)||o.aberto>0.004);   // as do mês + todas as que ainda não foram pagas
-  if(!L.length)return '';
-  const t=hoje();
-  const linha=o=>{
-    const c=cartaoDe(o.pag),fecha=c?(c.vence>c.fecha?o.venc.slice(0,7):mesAdd(o.venc.slice(0,7),-1))+'-'+p2(c.fecha):'';
-    const st=o.aberto<=0.004?'paga':o.pago>0?`paga em parte (${brl(o.pago)})`:o.venc<t?'venceu · marque como paga':(fecha&&t<=fecha?'aberta':'fechada');
-    return `<div class="ln"><span>${esc(o.pag.replace('Crédito ',''))} · vence ${fmtD(o.venc).slice(0,5)}${o.venc.slice(0,4)!==t.slice(0,4)?'/'+o.venc.slice(0,4):''}<br><small class="mut">${fecha?'fecha '+fmtD(fecha).slice(0,5)+' · ':''}${st}</small></span><b>${brl(o.tot)}</b></div>`;
-  };
-  return colap('fat',`<b>Faturas do cartão</b> <span class="mut">· ${brl(faturasSplit().tp)} a pagar</span>`,`<div class="mut">Em aberto e as que vencem em ${mesNome(mes)}</div>${L.map(linha).join('')}${rodapeFat()}`);
+function proxFaturaCard(){
+  const f=faturasSplit().prox.slice().sort((a,b)=>a.venc.localeCompare(b.venc))[0];   // a fatura em aberto que vence primeiro
+  if(!f)return '';
+  const c=cartaoDe(f.pag),t=hoje();
+  const fecha=c?(c.vence>c.fecha?f.venc.slice(0,7):mesAdd(f.venc.slice(0,7),-1))+'-'+p2(c.fecha):'';
+  const dias=Math.round((new Date(f.venc+'T12:00:00')-new Date(t+'T12:00:00'))/864e5);
+  const quando=dias>1?`vence em ${dias} dias`:dias===1?'vence amanhã':dias===0?'vence hoje':`venceu há ${-dias} dia${dias<-1?'s':''}`;
+  const sub=fecha&&t<=fecha?'ainda aberta para compras':'fechada';
+  return `<div class="card fprox lk" data-lp="pend"><div><span>Próxima fatura · ${esc(f.pag.replace('Crédito ',''))}</span><b>${brl(f.aberto)}</b></div><div style="text-align:right"><small>${quando}<br>${fmtD(f.venc).slice(0,5)} · ${sub}</small></div></div>`;
 }
 const curMes=()=>hoje().slice(0,7);
 function colap(k,titulo,inner,sec){
@@ -712,12 +747,28 @@ function renderPainel(){
   <div class="grid">
     <div class="kpi full lk" data-lp="pend"><span>Despesas pendentes ›</span><b>${brl(c.pend)}</b></div>
   </div>
-  ${faturasCard()}
+  ${proxFaturaCard()}
   ${resumoCard(c)}
   ${alHtml}
   ${colap('graf','<b>Gráficos</b>',graficos(c,plan),true)}`;
 }
 
+function rotuloDia(d){
+  const h=hoje(),ont=addMonths(h,0)&&new Date(new Date(h+'T12:00:00').getTime()-864e5).toISOString().slice(0,10);
+  if(d===h)return 'Hoje';if(d===ont)return 'Ontem';
+  const [y,m,dd]=d.split('-'),w=new Date(+y,+m-1,+dd).toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+  return w[0].toUpperCase()+w.slice(1)+', '+dd+'/'+m+(y!==h.slice(0,4)?'/'+y:'');
+}
+function agrupaDias(L){
+  let out='',i=0;
+  while(i<L.length){
+    const d=L[i].data,g=[];
+    while(i<L.length&&L[i].data===d)g.push(L[i++]);
+    const net=r2(g.reduce((a,x)=>a+(x.tipo==='receita'?x.valor:-x.valor),0));
+    out+=`<div class="dh"><span>${rotuloDia(d)}</span><b class="${net<0?'':'pos'}">${net<0?'−':'+'} ${brl(Math.abs(net))}</b></div>`+g.map(x=>rowHTML(x,false,true)).join('');
+  }
+  return out;
+}
 const norm=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 function renderLista(){
   const fs=[['todos','Todos'],['despesa','Despesas'],['receita','Receitas'],['inv','Investimentos'],['pend','Pendentes'],['reemb','A reembolsar']];
@@ -738,7 +789,7 @@ function renderLista(){
   $('#sumLista').textContent=busca?`${L.length} resultado(s) em todos os meses${L.length>200?' (mostrando 200)':''} · despesas ${brl(r2(s.d))} · receitas ${brl(r2(s.r))}`
     :filtro==='reemb'?`Aguardando reembolso: ${L.length} despesa(s), ${brl(r2(s.rp))} no total`
     :filtro==='pend'?`Despesas pendentes: ${brl(r2(s.dp))} · Receitas previstas: ${brl(r2(s.rpd))}`:`${L.length} lançamento(s)`;
-  $('#lista').innerHTML=L.slice(0,200).map(x=>rowHTML(x,busca)).join('')||'<p class="mut">Nada por aqui.</p>';
+  $('#lista').innerHTML=agrupaDias(L.slice(0,200))||'<p class="mut">Nada por aqui.</p>';
 }
 $('#busca').addEventListener('input',()=>{lockMes=false;renderLista()});
 $('#fCat').addEventListener('change',()=>{lockMes=false;renderLista()});
@@ -771,6 +822,7 @@ function render(){
   $('#mesLabel').textContent=mesNome(mes);$('#hojeBtn').hidden=mes===curMes();
   const pend=items.filter(i=>!i.sync).length+(orcDirty?1:0)+(cfgDirty?1:0);
   $('#sync').textContent=!url?'sem backup':pend?`${pend} pendente(s)`:'✓ sincronizado';
+  renderAviso(pend);
   if(aba==='painel')renderPainel();
   if(aba==='lista')renderLista();
   if(aba==='orc')renderOrc();
@@ -871,7 +923,7 @@ function renderEst(){
 $('#estat').addEventListener('click',e=>{const b=e.target.closest('[data-ep]');if(b){estP=b.dataset.ep;LS.set('estP',estP);renderEst()}});
 // ---------- formulário de lançamento ----------
 function setTipo(t){
-  tipo=t;
+  tipo=t;$('#vh').classList.toggle('rec',t==='receita');
   $$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const lc=LS.get('lastCat_'+t,'');
   $('#cat').innerHTML=(t==='despesa'?cats:catsR).map(opt).join('');
@@ -1003,10 +1055,22 @@ function salvaEdit(){
   if(it.tipo==='despesa')alertas(afet);
   sync();
 }
+let syncExcl=0;
 function excluir(lista){
-  if(!confirm(lista.length>1?`Excluir ${lista.length} parcelas?`:'Excluir este lançamento?'))return;
+  if(!lista.length)return;
+  if(lista.length>1&&!confirm(`Excluir ${lista.length} parcelas?`))return;   // um lançamento só: sem pergunta, mas com "Desfazer"
+  const t0=lista.map(it=>({it,del:it.del,idx:items.indexOf(it)}));
   lista.forEach(it=>{if(url){it.del=true;touch(it)}else items=items.filter(x=>x!==it)});
-  save();closeModal();render();sync();
+  save();closeModal();render();
+  toastUndo(lista.length>1?`${lista.length} lançamentos excluídos`:'Lançamento excluído',()=>{
+    clearTimeout(syncExcl);
+    t0.forEach(({it})=>{
+      if(!items.includes(it))items.push(it);   // já saiu da lista (sem backup, ou já sincronizado)
+      it.del=false;touch(it);
+    });
+    save();render();sync();
+  },7000);
+  clearTimeout(syncExcl);syncExcl=setTimeout(sync,7500);   // espera a janela do "Desfazer" antes de enviar a exclusão
 }
 
 // ---------- eventos ----------
@@ -1096,7 +1160,7 @@ $('#restaurar').onclick=async()=>{
 $('#exportar').onclick=()=>{
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify({v:3,cats,catsR,cartoes,auto,orc,items:live()},null,1)],{type:'application/json'}));
-  a.download='despesas-'+hoje()+'.json';a.click();
+  a.download='despesas-'+hoje()+'.json';a.click();LS.set('lastExport',Date.now());render();
 };
 function renderLog(){
   const el=document.getElementById('logFalhas');if(!el)return;
