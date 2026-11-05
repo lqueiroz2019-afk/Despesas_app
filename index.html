@@ -161,21 +161,22 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 #mpick .ms button{padding:16px 0;border-radius:14px;border:1px solid var(--line);background:none;color:var(--txt);font-size:16px}
 #mpick .ms button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 #mpick .ms button:disabled{opacity:.3}
-.est .eb{height:6px;border-radius:4px;background:var(--line);margin:3px 0 9px;overflow:hidden}.est .eb i{display:block;height:100%;background:var(--pri);border-radius:4px}
-.est .er{display:flex;justify-content:space-between;gap:10px;font-size:14px;align-items:baseline}.est .er small{color:var(--mut);font-size:12px}
-.est .up{color:var(--bad)}.est .dn{color:var(--ok)}.est .tag{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:1px 6px;margin-left:4px}
-.est .pbtn{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 #aviso{margin:8px 12px 0;padding:10px 12px;border-radius:12px;background:#fff4d6;color:#5b4300;font-size:13px;display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid #f1d98a}
 @media(prefers-color-scheme:dark){#aviso{background:#3a2e0b;color:#ffe9a8;border-color:#6b5513}}
 #aviso button{border:0;background:none;color:inherit;font-weight:700;font-size:13px;padding:8px 4px}
+#aviso>span:last-child{display:flex;align-items:center;gap:4px;flex:none}#aviso button{white-space:nowrap}
 .vh{border-radius:18px;padding:12px 10px 8px;margin:10px 0 4px;text-align:center;background:rgba(229,56,79,.10);transition:background .25s}
 .vh.rec{background:rgba(18,160,92,.13)}
 .vh label{display:block;margin:0;font-size:12px;color:var(--mut)}
 .vh input{font-size:44px;font-weight:800;text-align:center;background:transparent!important;border:0!important;box-shadow:none!important;width:100%;color:var(--bad);padding:2px 0;letter-spacing:-.5px}
 .vh.rec input{color:var(--ok)}
 .vh input::placeholder{color:var(--mut);opacity:.45}
-.dh{display:flex;justify-content:space-between;align-items:baseline;padding:14px 2px 4px;font-size:12px;font-weight:700;color:var(--mut)}
-.dh:first-child{padding-top:2px}.dh b{font-size:12px}
+#lista{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.dayp{margin:16px 4px 8px}.dayp:first-child{margin-top:4px}
+.dayp .d{display:inline-block;background:#0b6fe8;color:#fff;font-weight:700;font-size:12px;padding:5px 13px;border-radius:999px;box-shadow:0 3px 10px rgba(11,111,232,.30)}
+@media(prefers-color-scheme:dark){.dayp .d{background:#2f86f0}}
+.grp{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:2px 14px;box-shadow:0 6px 20px rgba(30,70,140,.08)}
+.grp .item:last-child{border-bottom:0}
 .fprox{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding:12px 14px}
 .fprox span{display:block;font-size:12px;color:var(--mut)}.fprox b{font-size:20px}.fprox small{color:var(--mut);font-size:11px}
 </style>
@@ -229,9 +230,6 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
   <div class="mut" id="sumLista" style="margin-bottom:8px"></div>
   <div class="card" id="lista"></div>
 </section>
-
-<!-- ANÁLISES -->
-<section id="v-est" class="view"><div id="estat"></div></section>
 
 <!-- ORÇAMENTO -->
 <section id="v-orc" class="view">
@@ -305,7 +303,6 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
   <button data-v="lancar" class="on"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg></span>Lançar</button>
   <button data-v="lista"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.8" cy="7" r=".9"/><circle cx="4.8" cy="12" r=".9"/><circle cx="4.8" cy="17" r=".9"/></svg></span>Lista</button>
   <button data-v="orc"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5V12h8.5"/></svg></span>Orçamento</button>
-  <button data-v="est"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>Análises</button>
   <button data-v="cfg"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></span>Ajustes</button>
 </nav>
 
@@ -764,8 +761,7 @@ function agrupaDias(L){
   while(i<L.length){
     const d=L[i].data,g=[];
     while(i<L.length&&L[i].data===d)g.push(L[i++]);
-    const net=r2(g.reduce((a,x)=>a+(x.tipo==='receita'?x.valor:-x.valor),0));
-    out+=`<div class="dh"><span>${rotuloDia(d)}</span><b class="${net<0?'':'pos'}">${net<0?'−':'+'} ${brl(Math.abs(net))}</b></div>`+g.map(x=>rowHTML(x,false,true)).join('');
+    out+=`<div class="dayp"><span class="d">${rotuloDia(d)}</span></div><div class="grp">${g.map(x=>rowHTML(x,false,true)).join('')}</div>`;
   }
   return out;
 }
@@ -826,7 +822,6 @@ function render(){
   if(aba==='painel')renderPainel();
   if(aba==='lista')renderLista();
   if(aba==='orc')renderOrc();
-  if(aba==='est')renderEst();
   if(aba==='lancar')renderRecentes();
 }
 function go(a){
@@ -838,89 +833,6 @@ function go(a){
 
 document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('colap')&&d.dataset.k)LS.set('colap_'+d.dataset.k,d.open)},true);
 
-// ---------- análises (estatísticas) ----------
-let estP=LS.get('estP','12');
-const monthsBetween=(a,b)=>(+b.slice(0,4)-+a.slice(0,4))*12+(+b.slice(5)-+a.slice(5));
-const mediaA=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
-const aparada=a=>{const b=[...a].sort((x,y)=>x-y);return mediaA(b.length>=8?b.slice(1,-1):b)};
-const pctil=(a,p)=>{const b=[...a].sort((x,y)=>x-y),k=(b.length-1)*p,f=Math.floor(k),c=Math.min(b.length-1,f+1);return b[f]+(b[c]-b[f])*(k-f)};
-const mesCurtoAno=m=>mesCurto(m)+'/'+m.slice(2,4);
-function serieMeses(ms){
-  const dados=ms.map(m=>calc(m)),cats=new Set();
-  dados.forEach(d=>Object.keys(d.byCat).forEach(c=>{if(!isInv(c))cats.add(c)}));
-  const por={};cats.forEach(c=>{por[c]=dados.map(d=>Math.max(0,r2(d.byCat[c]||0)))});
-  return{dados,por};
-}
-function renderEst(){
-  const cm=curMes(),fim=mesAdd(cm,-1),first=live().reduce((a,i)=>i.data<a?i.data:a,'9999').slice(0,7);
-  let n=estP==='tudo'?Math.max(1,monthsBetween(first,fim)+1):estP==='ano'?Math.max(1,+fim.slice(5)):+estP;
-  if(estP==='ano'&&cm.slice(5)==='01')n=12;
-  const ms=Array.from({length:n},(_,i)=>mesAdd(fim,i-n+1)).filter(m=>m>=first);
-  const nm=ms.length;
-  const rotulo={'3':'3 meses','6':'6 meses','12':'12 meses',ano:'Ano atual',tudo:'Tudo'};
-  const chips=`<div class="pbtn">${Object.entries(rotulo).map(([k,v])=>`<button class="fchip ${estP===k?'on':''}" data-ep="${k}">${v}</button>`).join('')}</div>`;
-  if(nm<1){$('#estat').innerHTML=`<div class="est">${chips}<div class="card"><p class="mut">Ainda não há meses completos para analisar.</p></div></div>`;return}
-  const {dados,por}=serieMeses(ms);
-  const totCat=Object.entries(por).map(([c,v])=>({c,t:r2(v.reduce((a,b)=>a+b,0)),v})).filter(x=>x.t>0).sort((a,b)=>b.t-a.t);
-  const total=r2(totCat.reduce((a,x)=>a+x.t,0)),recT=r2(dados.reduce((a,d)=>a+d.rec,0));
-  const r=nm>=2?Math.min(3,Math.floor(nm/2)):0;
-  const linhaRank=x=>{
-    const media=x.t/nm;let v='';
-    if(r){const rec=mediaA(x.v.slice(-r)),base=mediaA(x.v.slice(0,nm-r));
-      if(base>0){const p=(rec-base)/base*100;v=Math.abs(p)<10?`<span class="mut">● estável</span>`:p>0?`<span class="up">▲ ${Math.round(p)}%</span>`:`<span class="dn">▼ ${Math.abs(Math.round(p))}%</span>`}
-      else if(rec>0)v='<span class="up">▲ novo</span>';}
-    return `<div class="er"><span>${esc(x.c)} <small>${total>0?Math.round(x.t/total*100):0}%</small></span><span><b>${brl(x.t)}</b> ${v}</span></div><div class="eb"><i style="width:${totCat[0].t>0?x.t/totCat[0].t*100:0}%"></i></div><div class="er" style="margin-top:-6px;margin-bottom:8px"><small>média ${brl(r2(media))}/mês</small></div>`;
-  };
-  const rank=colap('est_rank',`<b>Ranking por categoria</b> <span class="mut">· ${nm} ${nm>1?'meses':'mês'}</span>`,
-    `<div class="mut" style="margin-bottom:8px">Despesas líquidas de reembolsos, sem investimentos. A variação compara ${r?`os últimos ${r} ${r>1?'meses':'mês'} com os ${nm-r} anteriores`:'— (precisa de ao menos 2 meses)'}.</div>
-     <div class="er"><span>Total no período</span><b>${brl(total)}</b></div><div class="er"><span>Média por mês</span><b>${brl(r2(total/nm))}</b></div><div class="er"><span>Receitas no período</span><b class="pos">${brl(recT)}</b></div><div style="height:10px"></div>
-     ${totCat.slice(0,10).map(linhaRank).join('')}
-     ${totCat.length>10?`<details><summary class="mut" style="padding:6px 0">Ver as outras ${totCat.length-10} categorias</summary>${totCat.slice(10).map(linhaRank).join('')}</details>`:''}`);
-  // planejado x real (meses do período + mês atual, se já tiver planejamento)
-  const msP=[...ms,cm],cmCalc=calc(cm),linhasPl=[];
-  const cats=[...new Set([...Object.keys(por),...Object.keys(orc[cm]||{})])].filter(c=>!isInv(c));
-  cats.forEach(c=>{
-    let tem=0,est=0,uso=0;
-    msP.forEach((m,i)=>{const p=(orc[m]||{})[c]||0;if(p>0){const g=m===cm?Math.max(0,r2(cmCalc.byCat[c]||0)):(por[c]||[])[ms.indexOf(m)]||0;tem++;uso+=g/p;if(g>=p)est++}});
-    if(tem)linhasPl.push({c,tem,est,uso:uso/tem*100});
-  });
-  linhasPl.sort((a,b)=>b.est/b.tem-a.est/a.tem||b.uso-a.uso);
-  const plan=colap('est_plan','<b>Planejado x real</b>',
-    linhasPl.length?`<div class="mut" style="margin-bottom:8px">Em quantos meses o gasto líquido chegou ao planejado (inclui o mês atual, em andamento).</div>`+linhasPl.map(x=>`<div class="er"><span>${esc(x.c)}</span><span><b class="${x.est?'up':''}">${x.est} de ${x.tem}</b> <small>estourou</small></span></div><div class="eb"><i style="width:${Math.min(100,x.uso)}%;background:${x.uso>=100?'var(--bad)':x.uso>=80?'var(--warn)':'var(--pri)'}"></i></div><div class="er" style="margin-top:-6px;margin-bottom:8px"><small>uso médio do planejado: ${Math.round(x.uso)}%</small></div>`).join('')
-    :`<p class="mut">Ainda não há meses com planejamento no período. Defina o orçamento do mês em Orçamento e esta análise passa a aparecer.</p>`);
-  // análise preditiva: últimos 12 meses completos, por categoria
-  const m12=Array.from({length:12},(_,i)=>mesAdd(fim,i-11)).filter(m=>m>=first),n12=m12.length;
-  let pred='';
-  if(n12<4)pred=colap('est_pred','<b>Previsão para '+mesNome(cm)+'</b>','<p class="mut">Precisa de ao menos 4 meses de histórico.</p>');
-  else{
-    const S=serieMeses(m12),rows=[],atip=[];
-    Object.entries(S.por).forEach(([c,v])=>{
-      const base=aparada(v),q1=pctil(v,.25),q3=pctil(v,.75),med=pctil(v,.5),mean=mediaA(v);
-      const sd=Math.sqrt(mediaA(v.map(x=>(x-mean)**2))),zeros=v.filter(x=>x===0).length;
-      const h=Math.floor(n12/2),a1=mediaA(v.slice(0,h)),a2=mediaA(v.slice(n12-h));
-      const tend=a1>0?(a2-a1)/a1:(a2>0?1:0);
-      const mx=Math.max(...v);if(n12>=8&&mx>2.5*Math.max(med,1)&&mx>300){atip.push(`${c}: ${mesCurtoAno(m12[v.indexOf(mx)])} (${brl(mx)})`)}
-      rows.push({c,prev:base,q1,q3,tend,irr:mean>0&&sd/mean>0.8,oc:zeros>=4,tot:v.reduce((a,b)=>a+b,0)});
-    });
-    rows.sort((a,b)=>b.tot-a.tot);const rr=rows.filter(x=>x.prev>=1||x.tot>0);
-    const totPrev=r2(rr.reduce((a,x)=>a+x.prev,0)),recM=mediaA(S.dados.map(d=>d.rec)),invM=mediaA(S.dados.map(d=>d.inv));
-    const sobra=r2(recM-totPrev-invM),gastoAgora=r2(cmCalc.gasto),pc=totPrev>0?gastoAgora/totPrev*100:0;
-    const ic=t=>t>=.15?'<span class="up">↗</span>':t<=-.15?'<span class="dn">↘</span>':'<span class="mut">→</span>';
-    pred=colap('est_pred',`<b>Previsão para ${mesNome(cm)}</b> <span class="mut">· base ${n12} meses</span>`,
-      `<div class="mut" style="margin-bottom:8px">Valor esperado por categoria = média dos últimos ${n12} meses sem o mês mais alto e o mais baixo (para uma compra grande não distorcer). A faixa mostra onde caiu metade dos meses.</div>
-       <div class="er"><span><b>Despesas previstas no mês</b></span><b>${brl(totPrev)}</b></div>
-       <div class="er"><span>Gasto líquido até agora</span><b>${brl(gastoAgora)} <small>(${Math.round(pc)}%)</small></b></div>
-       <div class="eb"><i style="width:${Math.min(100,pc)}%;background:${pc>=100?'var(--bad)':'var(--pri)'}"></i></div>
-       <div class="er"><span>Receita média / invest. médio</span><b>${brl(r2(recM))} / ${brl(r2(invM))}</b></div>
-       <div class="er"><span><b>Sobra estimada</b></span><b class="${sobra<0?'neg':'pos'}">${brl(sobra)}</b></div>
-       <div style="height:12px"></div>
-       ${rr.map(x=>`<div class="er"><span>${esc(x.c)} ${ic(x.tend)}${x.oc?'<span class="tag">ocasional</span>':x.irr?'<span class="tag">irregular</span>':''}</span><b>${brl(r2(x.prev))}</b></div><div class="er" style="margin-bottom:8px"><small>faixa ${brl(r2(x.q1))} a ${brl(r2(x.q3))}</small></div>`).join('')}
-       ${atip.length?`<div class="mut" style="margin-top:6px">Meses atípicos (parte da base é descartada): ${atip.slice(0,5).map(esc).join(' · ')}</div>`:''}
-       <div class="mut" style="margin-top:6px">↗ ↘ comparam a 2ª metade dos meses com a 1ª (mudança de 15% ou mais). Previsão estatística simples: não conhece compras futuras nem parcelas já contratadas.</div>`);
-  }
-  $('#estat').innerHTML=`<div class="est">${chips}${rank}${plan}${pred}</div>`;
-}
-$('#estat').addEventListener('click',e=>{const b=e.target.closest('[data-ep]');if(b){estP=b.dataset.ep;LS.set('estP',estP);renderEst()}});
 // ---------- formulário de lançamento ----------
 function setTipo(t){
   tipo=t;$('#vh').classList.toggle('rec',t==='receita');
