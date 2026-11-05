@@ -70,12 +70,11 @@ nav button.on{color:var(--pri);font-weight:700}
 .view{display:none}.view.on{display:block}
 .viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#8d8d88;--c1:var(--s1);--ink:var(--txt);--ink2:var(--mut);--grid:var(--line)}
 @media(prefers-color-scheme:dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#6b6b66}}
-.legend{flex-wrap:wrap;row-gap:6px}
 .vinfo{margin-top:6px;font-size:14px}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
 .viz h3{font-size:15px;margin:0 0 2px}
-.legend{display:flex;gap:16px;font-size:13px;color:var(--mut);margin:6px 0 10px}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mut);margin:6px 0 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .cbar{margin-bottom:14px}
 .cbar .t{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:5px}
 .cbar .t span:last-child{color:var(--mut);font-size:13px;white-space:nowrap}
@@ -145,7 +144,6 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 .hero.neg{background:linear-gradient(135deg,#ff8a98,#e5384f);box-shadow:0 10px 26px rgba(229,56,79,.30)}
 .hero span{display:block;font-size:13px;opacity:.9}.hero b{display:block;font-size:34px;font-weight:800;margin:2px 0}.hero small{font-size:12px;opacity:.85}
 .sbar{display:flex;height:12px;border-radius:8px;overflow:hidden;background:var(--line);margin:12px 0 8px}.sbar i{display:block;height:100%}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .rs{background:rgba(127,127,127,.08);border-radius:12px;padding:10px}.rs span{display:block;font-size:12px;color:var(--mut)}.rs b{font-size:17px}.rs small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
@@ -474,7 +472,9 @@ function marcarOk(id){
   it.st='ok';touch(it);save();render();sync();
   toastUndo(it.tipo==='receita'?'Marcada como recebida':'Marcada como realizada',()=>{it.st='pend';touch(it);save();render();sync()});
 }
-const save=()=>LS.set('items2',items);
+let saveSuja=false;   // várias chamadas a save() no mesmo trecho de código viram uma gravação só (feita logo em seguida, nunca adiada)
+function flushSave(){if(!saveSuja)return;saveSuja=false;LS.set('items2',items)}
+const save=()=>{if(saveSuja)return;saveSuja=true;queueMicrotask(flushSave)};
 const saveOrc=()=>{LS.set('orc',orc);LS.set('orcDirty',orcDirty)};
 const live=()=>items.filter(i=>!i.del);
 const touch=it=>{it.rev=(it.rev||0)+1;it.sync=false};
@@ -611,7 +611,7 @@ async function sync(manual){
     $('#status').textContent='Última sincronização: '+new Date().toLocaleString('pt-BR');
     if(manual)toast('Sincronizado ✓');
   }catch(e){$('#status').textContent='Falha ao sincronizar: '+e.message+(lotes>1?' O que já foi enviado fica salvo; toque de novo para continuar.':' Seus lançamentos continuam salvos no aparelho e serão reenviados.');if(manual)toast(e.message,4500)}
-  syncing=false;render();
+  syncing=false;renderStatus();   // a tela já foi redesenhada pela ação; aqui só o indicador muda
 }
 
 // ---------- renderização ----------
@@ -628,7 +628,6 @@ const ord=(a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id);
 const fmtK=n=>n>=1000?(n/1000).toFixed(2).replace('.',',')+'k':dec(n);
 const mesCurto=m=>{const [y,mo]=m.split('-');return new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')};
 let VIZ=null;
-const nfInt=n=>n>0?Math.round(n).toLocaleString('pt-BR'):'–';
 function infoHTML(i){
   const d=VIZ.dd[i];
   const l=VIZ.series.map((s,j)=>({s,v:d.vals[j]})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
@@ -679,14 +678,6 @@ function faturasSplit(){
   const vis={},prox=[],fut=[];
   faturasGrupos().filter(o=>o.aberto>0.004).forEach(o=>{if(!vis[o.pag]){vis[o.pag]=1;prox.push(o)}else fut.push(o)});   // a mais antiga em aberto de cada cartão é a "próxima"
   return{prox,fut,tp:r2(prox.reduce((a,o)=>a+o.aberto,0)),tf:r2(fut.reduce((a,o)=>a+o.aberto,0))};
-}
-function kpiFaturas(){
-  const f=faturasSplit();if(!f.prox.length)return '';
-  return `<div class="kpi full"><span>Próximas faturas (só demonstrativo)</span><b>${brl(f.tp)}</b><small>já estão em despesas pendentes, não somam de novo · ${f.prox.map(o=>`${esc(o.pag.replace('Crédito ',''))} ${brl(o.aberto)} (vence ${fmtD(o.venc).slice(0,5)})`).join(' · ')}${f.tf>0?` · mais ${brl(f.tf)} em faturas futuras`:''}</small></div>`;
-}
-function rodapeFat(){
-  const f=faturasSplit();
-  return `<div class="ln"><span>Próximas faturas (a pagar)</span><b>${brl(f.tp)}</b></div>${f.tf>0?`<div class="ln"><span>Faturas futuras (parcelas)</span><b>${brl(f.tf)}</b></div>`:''}`;
 }
 function proxFaturaCard(){
   const f=faturasSplit().prox.slice().sort((a,b)=>a.venc.localeCompare(b.venc))[0];   // a fatura em aberto que vence primeiro
@@ -787,7 +778,8 @@ function renderLista(){
     :filtro==='pend'?`Despesas pendentes: ${brl(r2(s.dp))} · Receitas previstas: ${brl(r2(s.rpd))}`:`${L.length} lançamento(s)`;
   $('#lista').innerHTML=agrupaDias(L.slice(0,200))||'<p class="mut">Nada por aqui.</p>';
 }
-$('#busca').addEventListener('input',()=>{lockMes=false;renderLista()});
+let buscaT=0;
+$('#busca').addEventListener('input',()=>{clearTimeout(buscaT);buscaT=setTimeout(()=>{lockMes=false;renderLista()},150)});
 $('#fCat').addEventListener('change',()=>{lockMes=false;renderLista()});
 
 function renderRecentes(){
@@ -813,12 +805,15 @@ function renderOrc(){
   $$('#orcList .brow').forEach(updRow);updTotaisOrc();
 }
 
-function render(){
-  $('#mnav').hidden=!['painel','lista','orc'].includes(aba);
-  $('#mesLabel').textContent=mesNome(mes);$('#hojeBtn').hidden=mes===curMes();
+function renderStatus(){
   const pend=items.filter(i=>!i.sync).length+(orcDirty?1:0)+(cfgDirty?1:0);
   $('#sync').textContent=!url?'sem backup':pend?`${pend} pendente(s)`:'✓ sincronizado';
   renderAviso(pend);
+}
+function render(){
+  $('#mnav').hidden=!['painel','lista','orc'].includes(aba);
+  $('#mesLabel').textContent=mesNome(mes);$('#hojeBtn').hidden=mes===curMes();
+  renderStatus();
   if(aba==='painel')renderPainel();
   if(aba==='lista')renderLista();
   if(aba==='orc')renderOrc();
