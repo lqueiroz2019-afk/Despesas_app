@@ -665,14 +665,23 @@ function faturasSplit(){
 }
 function aPagarCard(){
   if(mes<curMes())return '';   // meses anteriores não mostram
-  const t=hoje(),g={},L=[];
+  const t=hoje(),g={},fat={},L=[];
   live().filter(i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)).forEach(i=>{
-    if(i.venc){const k=i.pag+'|'+i.venc,o=g[k]=g[k]||{nome:`${i.pag} · fatura ${fmtD(i.venc).slice(0,5)}`,tot:0,venc:i.venc,vencida:i.venc<t};o.tot+=i.valor}
+    if(i.venc){const k=i.pag+'|'+i.venc,o=fat[k]=fat[k]||{pag:i.pag,nome:`${i.pag} · fatura ${fmtD(i.venc).slice(0,5)}`,tot:0,venc:i.venc,vencida:i.venc<t};o.tot+=i.valor}
     else if(i.pag==='Boleto'&&i.data<t)L.push({nome:`${i.desc||i.cat} · boleto ${fmtD(i.data).slice(0,5)}`,tot:i.valor,venc:i.data,vencida:true});
     else{const k=i.pag==='Boleto'?'bol':'av',o=g[k]=g[k]||{nome:k==='bol'?'Boletos':'À vista pendente',tot:0,venc:i.data,vencida:false};o.tot+=i.valor;if(i.data<o.venc)o.venc=i.data}
   });
   L.push(...Object.values(g));
-  cartoes.forEach(c=>{const v=fatura(c,t).venc;if(!L.some(x=>x.nome.startsWith('Crédito '+c.nome+' ')&&!x.vencida))L.push({nome:`Crédito ${c.nome} · fatura ${fmtD(v).slice(0,5)}`,tot:0,venc:v,vencida:false})});   // cartão sem fatura aberta: próxima, zerada
+  // por cartão: faturas vencidas e não pagas + apenas a próxima a vencer (mesmo zerada); as posteriores não entram
+  const nomes=new Set(cartoes.map(c=>'Crédito '+c.nome));
+  Object.values(fat).filter(o=>!nomes.has(o.pag)).forEach(o=>L.push(o));
+  cartoes.forEach(c=>{
+    const pag='Crédito '+c.nome,mine=Object.values(fat).filter(o=>o.pag===pag);
+    mine.filter(o=>o.vencida).forEach(o=>L.push(o));
+    const v0=fatura(c,t).venc,aberta=mine.filter(o=>!o.vencida).sort((a,b)=>a.venc.localeCompare(b.venc))[0];
+    if(aberta&&aberta.venc<=v0)L.push(aberta);
+    else L.push({pag,nome:`${pag} · fatura ${fmtD(v0).slice(0,5)}`,tot:0,venc:v0,vencida:false});
+  });
   L.forEach(x=>x.tot=r2(x.tot));
   L.sort((a,b)=>(b.vencida-a.vencida)||a.venc.localeCompare(b.venc)||a.nome.localeCompare(b.nome));
   const tot=r2(L.reduce((a,x)=>a+x.tot,0));
