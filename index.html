@@ -63,6 +63,7 @@ input.big{font-size:26px;font-weight:700}
 .brow .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .brow input{width:130px;text-align:right}
 .guia{padding-left:20px;margin:8px 0;font-size:14px;line-height:1.5}.guia li{margin:4px 0}.guia code{background:var(--line);padding:1px 5px;border-radius:5px;font-size:12px}
+.ln.z{opacity:.45}.ln.venc{background:rgba(229,56,79,.10);border-radius:10px;padding-left:8px;padding-right:8px}.ln.venc span,.ln.venc b{font-weight:700}.okp{display:flex;align-items:center;gap:8px;padding:6px 0}.okp b{color:var(--ok)}
 .ln b{white-space:nowrap}.colap.card>summary{position:relative}.colap.card>summary::after{position:absolute;right:2px;top:2px;float:none}
 .rows{margin-top:6px;border-top:1px solid var(--line)}.ln.sub{padding-left:14px;font-size:13px}
 .pr{margin:10px 0 2px}.pr>div{display:flex;justify-content:space-between;font-size:14px}.pr i{display:block;height:7px;border-radius:5px;background:var(--line);margin-top:5px;overflow:hidden}.pr s{display:block;height:100%;background:var(--pri);border-radius:5px}
@@ -662,18 +663,21 @@ function faturasSplit(){
   faturasGrupos().filter(o=>o.aberto>0.004).forEach(o=>{if(!vis[o.pag]){vis[o.pag]=1;prox.push(o)}else fut.push(o)});   // a mais antiga em aberto de cada cartão é a "próxima"
   return{prox,fut,tp:r2(prox.reduce((a,o)=>a+o.aberto,0)),tf:r2(fut.reduce((a,o)=>a+o.aberto,0))};
 }
-function proxFaturaCard(){
+function aPagarCard(){
   if(mes<curMes())return '';   // meses anteriores não mostram
-  const t=hoje(),ab=faturasSplit().prox,cand=[...ab];
-  cartoes.forEach(c=>{if(!ab.some(o=>o.pag==='Crédito '+c.nome))cand.push({pag:'Crédito '+c.nome,venc:fatura(c,t).venc,aberto:0})});   // cartão sem fatura aberta: mostra a próxima, zerada
-  const f=cand.sort((a,b)=>a.venc.localeCompare(b.venc))[0];
-  if(!f)return '';
-  const c=cartaoDe(f.pag);
-  const fecha=c?(c.vence>c.fecha?f.venc.slice(0,7):mesAdd(f.venc.slice(0,7),-1))+'-'+p2(c.fecha):'';
-  const dias=Math.round((new Date(f.venc+'T12:00:00')-new Date(t+'T12:00:00'))/864e5);
-  const quando=dias>1?`vence em ${dias} dias`:dias===1?'vence amanhã':dias===0?'vence hoje':`venceu há ${-dias} dia${dias<-1?'s':''}`;
-  const sub=fecha&&t<=fecha?'ainda aberta para compras':'fechada';
-  return `<div class="card fprox lk" data-lp="pend"><div><span>Próxima fatura · ${esc(f.pag.replace('Crédito ',''))}</span><b>${brl(f.aberto)}</b></div><div style="text-align:right"><small>${quando}<br>${fmtD(f.venc).slice(0,5)} · ${sub}</small></div></div>`;
+  const t=hoje(),g={},L=[];
+  live().filter(i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)).forEach(i=>{
+    if(i.venc){const k=i.pag+'|'+i.venc,o=g[k]=g[k]||{nome:`${i.pag} · fatura ${fmtD(i.venc).slice(0,5)}`,tot:0,venc:i.venc,vencida:i.venc<t};o.tot+=i.valor}
+    else if(i.pag==='Boleto'&&i.data<t)L.push({nome:`${i.desc||i.cat} · boleto ${fmtD(i.data).slice(0,5)}`,tot:i.valor,venc:i.data,vencida:true});
+    else{const k=i.pag==='Boleto'?'bol':'av',o=g[k]=g[k]||{nome:k==='bol'?'Boletos':'À vista pendente',tot:0,venc:i.data,vencida:false};o.tot+=i.valor;if(i.data<o.venc)o.venc=i.data}
+  });
+  L.push(...Object.values(g));
+  cartoes.forEach(c=>{const v=fatura(c,t).venc;if(!L.some(x=>x.nome.startsWith('Crédito '+c.nome+' ')&&!x.vencida))L.push({nome:`Crédito ${c.nome} · fatura ${fmtD(v).slice(0,5)}`,tot:0,venc:v,vencida:false})});   // cartão sem fatura aberta: próxima, zerada
+  L.forEach(x=>x.tot=r2(x.tot));
+  L.sort((a,b)=>(b.vencida-a.vencida)||a.venc.localeCompare(b.venc)||a.nome.localeCompare(b.nome));
+  const tot=r2(L.reduce((a,x)=>a+x.tot,0));
+  const body=tot>0?`<div class="rows">${L.map(x=>`<div class="ln lk ${x.tot?(x.vencida?'venc':''):'z'}" data-lp="pend"><span>${esc(x.nome)}${x.vencida?' <em class="chip y">vencida</em>':''} ›</span><b class="${x.tot?'neg':''}">${brl(x.tot)}</b></div>`).join('')}</div>`:'<div class="okp"><b>✓</b><span>Nada a pagar</span></div>';
+  return colap('apagar',`<span class="mut">A pagar</span><div class="big-n ${tot>0?'neg':'pos'}">${brl(tot)}</div>`,body);
 }
 const curMes=()=>hoje().slice(0,7);
 function colap(k,titulo,inner,sec){
@@ -710,7 +714,7 @@ function renderPainel(){
     ${c.invPend?`<div class="ln"><span>Investimentos previstos</span><b class="neg">− ${brl(c.invPend)}</b></div>`:''}
     ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}</div>`):'';
   const bv=(!items.length&&!url)?`<div class="card"><b>Bem-vindo! 👋</b><ol class="guia"><li>Toque em <b>Lançar</b> e registre sua primeira despesa ou receita.</li><li>Em <b>Orçamento</b>, defina quanto pretende gastar por categoria.</li><li>Em <b>Ajustes</b>, cadastre seus cartões e, se quiser, ative o backup na sua planilha.</li></ol><button class="btn sec" data-go="cfg">Ir para Ajustes</button></div>`:'';
-  $('#painel').innerHTML=bv+card1+card2+proxFaturaCard()+resumoCard(c);
+  $('#painel').innerHTML=bv+card1+card2+aPagarCard()+resumoCard(c);
 }
 
 function rotuloDia(d){
