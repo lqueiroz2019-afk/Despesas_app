@@ -62,6 +62,7 @@ input.big{font-size:26px;font-weight:700}
 .brow{margin-bottom:14px}
 .brow .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .brow input{width:130px;text-align:right}
+.guia{padding-left:20px;margin:8px 0;font-size:14px;line-height:1.5}.guia li{margin:4px 0}.guia code{background:var(--line);padding:1px 5px;border-radius:5px;font-size:12px}
 .ln b{white-space:nowrap}.colap.card>summary{position:relative}.colap.card>summary::after{position:absolute;right:2px;top:2px;float:none}
 .rows{margin-top:6px;border-top:1px solid var(--line)}.ln.sub{padding-left:14px;font-size:13px}
 .pr{margin:10px 0 2px}.pr>div{display:flex;justify-content:space-between;font-size:14px}.pr i{display:block;height:7px;border-radius:5px;background:var(--line);margin-top:5px;overflow:hidden}.pr s{display:block;height:100%;background:var(--pri);border-radius:5px}
@@ -245,6 +246,11 @@ body.t-cristal #modal{background:rgba(5,15,35,.5);-webkit-backdrop-filter:blur(8
 
 <!-- AJUSTES -->
 <section id="v-cfg" class="view">
+  <details class="colap card" data-k="guia"><summary><b>Como ativar o backup na sua planilha</b></summary>
+    <ol class="guia"><li>Crie uma planilha nova no Google Planilhas.</li><li>Abra <b>Extensões → Apps Script</b>, apague o conteúdo e cole o código copiado pelo botão abaixo.</li><li>Na linha <code>const SENHA</code>, troque o texto por uma senha longa e secreta.</li><li>Clique em <b>Implantar → Nova implantação → App da web</b>. Em "Quem pode acessar", escolha <b>Qualquer pessoa</b>, e implante (autorize quando pedir).</li><li>Copie a URL que termina em <code>/exec</code> e cole abaixo, junto com a mesma senha.</li></ol>
+    <button class="btn sec" id="copiaScript">Copiar código do script</button>
+    <p class="mut">Cada pessoa usa a própria planilha: os dados de uma não aparecem para a outra. O backup é opcional.</p>
+  </details>
   <div class="card">
     <b>Backup no Google Planilhas</b>
     <label>URL do aplicativo da web (Apps Script)</label>
@@ -402,8 +408,10 @@ const LS={
 const DEF_CATS=['Alimentação','Mercado','Transporte','Moradia','Saúde','Lazer','Educação','Contas','Compras','Aporte','Reserva','Outros'];
 const DEF_CATS_R=['Salário','Benefícios','Freelance','Rendimentos','Outros'];
 const PAGS_BASE=['À vista','Boleto'];
-const DEF_CARTOES=[{nome:'BTG',fecha:7,vence:11},{nome:'Nu',fecha:3,vence:10}];
-let cartoes=LS.get('cartoes',DEF_CARTOES);
+const DEF_CARTOES=[];
+const JA_USA=LS.get('items2',null)!==null||LS.get('items',null)!==null;   // quem já tinha dados mantém os padrões antigos; quem chega agora começa em branco
+let cartoes=LS.get('cartoes',null);
+if(cartoes===null){cartoes=JA_USA?[{nome:'BTG',fecha:7,vence:11},{nome:'Nu',fecha:3,vence:10}]:[];LS.set('cartoes',cartoes)}
 const pagsLista=()=>[...PAGS_BASE,...cartoes.map(c=>'Crédito '+c.nome)];
 const cartaoDe=p=>cartoes.find(c=>'Crédito '+c.nome===p)||null;
 const p2=n=>String(n).padStart(2,'0');
@@ -436,8 +444,9 @@ if(!LS.get('mig3',false)){   // versão 3: acrescenta as novas categorias a quem
   if(!catsR.includes('Benefícios'))catsR.splice(1,0,'Benefícios');
   LS.set('cats',cats);LS.set('catsR',catsR);LS.set('mig3',true);
 }
-const DEF_AUTO={valor:1201.87,desde:'2026-11'};
-let auto=LS.get('auto',DEF_AUTO);   // lançamento automático mensal (Benefícios x Mercado)
+const DEF_AUTO={valor:0,desde:''};
+let auto=LS.get('auto',null);
+if(auto===null){auto=JA_USA?{valor:1201.87,desde:'2026-11'}:DEF_AUTO;LS.set('auto',auto)}   // lançamento automático mensal (Benefícios x Mercado)
 let url=LS.get('url',''), senha=LS.get('senha','');
 let aba='lancar', tipo='despesa', filtro='todos', editId=null, lockMes=false, catPend=null;
 let mes=(()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,7)})();   // mês local (não UTC)
@@ -623,7 +632,7 @@ function rowHTML(i,ano=false,semData=false){
   if(i.tipo==='despesa'&&isInv(i.cat))chips.push('<em class="chip b">investimento</em>');
   if(i.grupo==='auto')chips.push('<em class="chip g">automático</em>');
   if(i.tipo==='despesa'&&i.reemb&&!isInv(i.cat))chips.push(i.reembRec>0.004?`<em class="chip g">↩ reembolsado ${brl(i.reembRec)}</em>`:`<em class="chip b">↩ aguardando reembolso</em>`);
-  return `<div class="item" data-id="${i.id}"><div><b>${esc(i.desc||i.cat)}${i.parc?` <small class="mut">(${i.parc})</small>`:''}</b><span class="mut">${semData?'':(ano?fmtD(i.data):fmtD(i.data).slice(0,5))+' · '}${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}${i.venc?' · vence '+fmtD(i.venc).slice(0,5):''}</span><div>${chips.join('')}</div></div><div class="rt"><div class="v ${i.tipo==='receita'?'pos':isInv(i.cat)?'inv':''}">${i.tipo==='receita'?'+':''}${brl(i.valor)}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
+  return `<div class="item" data-id="${i.id}"><div><b>${esc(i.desc||i.cat)}${i.parc?` <small class="mut">(${i.parc})</small>`:''}</b><span class="mut">${semData?'':(ano?fmtD(i.data):fmtD(i.data).slice(0,5))+' · '}${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}${i.venc?' · vence '+fmtD(i.venc).slice(0,5):''}</span><div>${chips.join('')}</div></div><div class="rt"><div class="v ${i.tipo==='receita'?'pos':isInv(i.cat)?'inv':'neg'}">${i.tipo==='receita'?'+':''}${brl(i.valor)}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
 }
 const ord=(a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id);
 
@@ -654,9 +663,12 @@ function faturasSplit(){
   return{prox,fut,tp:r2(prox.reduce((a,o)=>a+o.aberto,0)),tf:r2(fut.reduce((a,o)=>a+o.aberto,0))};
 }
 function proxFaturaCard(){
-  const f=faturasSplit().prox.slice().sort((a,b)=>a.venc.localeCompare(b.venc))[0];   // a fatura em aberto que vence primeiro
+  if(mes<curMes())return '';   // meses anteriores não mostram
+  const t=hoje(),ab=faturasSplit().prox,cand=[...ab];
+  cartoes.forEach(c=>{if(!ab.some(o=>o.pag==='Crédito '+c.nome))cand.push({pag:'Crédito '+c.nome,venc:fatura(c,t).venc,aberto:0})});   // cartão sem fatura aberta: mostra a próxima, zerada
+  const f=cand.sort((a,b)=>a.venc.localeCompare(b.venc))[0];
   if(!f)return '';
-  const c=cartaoDe(f.pag),t=hoje();
+  const c=cartaoDe(f.pag);
   const fecha=c?(c.vence>c.fecha?f.venc.slice(0,7):mesAdd(f.venc.slice(0,7),-1))+'-'+p2(c.fecha):'';
   const dias=Math.round((new Date(f.venc+'T12:00:00')-new Date(t+'T12:00:00'))/864e5);
   const quando=dias>1?`vence em ${dias} dias`:dias===1?'vence amanhã':dias===0?'vence hoje':`venceu há ${-dias} dia${dias<-1?'s':''}`;
@@ -697,7 +709,8 @@ function renderPainel(){
     <div class="ln sub"><span>↳ Orçamento ainda sem lançamento</span><b class="neg">${brl(semLanc)}</b></div>
     ${c.invPend?`<div class="ln"><span>Investimentos previstos</span><b class="neg">− ${brl(c.invPend)}</b></div>`:''}
     ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}</div>`):'';
-  $('#painel').innerHTML=card1+card2+proxFaturaCard()+resumoCard(c);
+  const bv=(!items.length&&!url)?`<div class="card"><b>Bem-vindo! 👋</b><ol class="guia"><li>Toque em <b>Lançar</b> e registre sua primeira despesa ou receita.</li><li>Em <b>Orçamento</b>, defina quanto pretende gastar por categoria.</li><li>Em <b>Ajustes</b>, cadastre seus cartões e, se quiser, ative o backup na sua planilha.</li></ol><button class="btn sec" data-go="cfg">Ir para Ajustes</button></div>`:'';
+  $('#painel').innerHTML=bv+card1+card2+proxFaturaCard()+resumoCard(c);
 }
 
 function rotuloDia(d){
@@ -1082,17 +1095,35 @@ $('#salvaAuto').onclick=()=>{
   fillAuto();render();markCfg();
 };
 function fillCartoes(){
-  $('#cartoesCfg').innerHTML=cartoes.map((c,i)=>`<div class="row2" style="margin-top:6px"><div><label>${esc(c.nome)} · fecha no dia</label><input type="number" min="1" max="28" inputmode="numeric" data-ci="${i}" data-k="fecha" value="${c.fecha}"></div><div><label>vence no dia</label><input type="number" min="1" max="28" inputmode="numeric" data-ci="${i}" data-k="vence" value="${c.vence}"></div></div>`).join('');
+  $('#cartoesCfg').innerHTML=(cartoes.length?cartoes.map((c,i)=>`<div class="row2" style="margin-top:6px"><div><label>${esc(c.nome)} · fecha no dia</label><input type="number" min="1" max="28" inputmode="numeric" data-ci="${i}" data-k="fecha" value="${c.fecha}"></div><div><label>vence no dia</label><input type="number" min="1" max="28" inputmode="numeric" data-ci="${i}" data-k="vence" value="${c.vence}"></div></div><button class="btn sec" data-rmc="${i}">Remover ${esc(c.nome)}</button>`).join(''):'<p class="mut">Nenhum cartão cadastrado.</p>')
+   +`<label style="margin-top:14px">Adicionar cartão</label><div class="row2"><input id="cNome" type="text" placeholder="Nome (ex.: Nubank)" autocomplete="off"><input id="cFecha" type="number" min="1" max="28" inputmode="numeric" placeholder="Fecha dia"></div><div class="row2"><input id="cVence" type="number" min="1" max="28" inputmode="numeric" placeholder="Vence dia"><button class="btn sec" id="addCartao">Adicionar</button></div>`;
 }
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.id==='copiaScript'){(navigator.clipboard?navigator.clipboard.writeText(GS_CODE):Promise.reject()).then(()=>toast('Código copiado ✓'),()=>toast('Não foi possível copiar'));return}
+  if(t.id==='addCartao'){
+    const nome=$('#cNome').value.trim(),f=parseInt($('#cFecha').value),v=parseInt($('#cVence').value);
+    if(!nome||!(f>=1&&f<=28)||!(v>=1&&v<=28)){toast('Informe nome e dias de 1 a 28');return}
+    if(cartoes.some(c=>norm(c.nome)===norm(nome))){toast('Já existe um cartão com esse nome');return}
+    cartoes=[...cartoes,{nome,fecha:f,vence:v}];LS.set('cartoes',cartoes);fillCartoes();toast('Cartão adicionado ✓');markCfg();
+  }
+  const rm=t.closest&&t.closest('[data-rmc]');
+  if(rm){
+    const c=cartoes[+rm.dataset.rmc];
+    if(live().some(x=>x.pag==='Crédito '+c.nome)){toast('Há lançamentos neste cartão; não dá para remover');return}
+    cartoes=cartoes.filter((_,i)=>i!==+rm.dataset.rmc);LS.set('cartoes',cartoes);fillCartoes();render();toast('Cartão removido');markCfg();
+  }
+});
 $('#salvaCartoes').onclick=()=>{
   const novos=cartoes.map(c=>({...c}));let ok=true;
-  $$('#cartoesCfg input').forEach(inp=>{const v=parseInt(inp.value);if(!(v>=1&&v<=28))ok=false;else novos[+inp.dataset.ci][inp.dataset.k]=v});
+  $$('#cartoesCfg input[data-ci]').forEach(inp=>{const v=parseInt(inp.value);if(!(v>=1&&v<=28))ok=false;else novos[+inp.dataset.ci][inp.dataset.k]=v});
   if(!ok){toast('Use dias de 1 a 28');return}
   cartoes=novos;LS.set('cartoes',cartoes);
   let n=0;   // faturas ainda pendentes são recalculadas com os novos dias
   live().filter(x=>x.tipo==='despesa'&&x.st==='pend'&&x.venc).forEach(x=>{const c=cartaoDe(x.pag);if(!c)return;const nv=fatura(c,x.data).venc;if(nv!==x.venc){x.venc=nv;touch(x);n++}});
   if(n)save();render();toast(n?`Cartões salvos · ${n} fatura(s) recalculada(s)`:'Cartões salvos ✓');markCfg();
 };
+const GS_CODE="// Cole este código em script.google.com (Extensões > Apps Script) dentro da sua planilha,\n// substituindo o código anterior.\n// Primeira vez:  Implantar > Nova implantação > App da Web\n//                Executar como: Eu | Quem pode acessar: Qualquer pessoa\n// Se já tinha implantado: Implantar > Gerenciar implantações > ícone de lápis >\n//                Versão: \"Nova versão\" > Implantar (a URL continua a mesma).\n\n// >>> DEFINA SUA SENHA AQUI (troque o texto abaixo por uma senha longa e secreta, 16+ caracteres).\n// O app só consegue ler/gravar na planilha se enviar exatamente esta senha.\n// Use a mesma senha em Ajustes > \"Senha do backup\" no app.\nconst SENHA = 'TROQUE-ESTA-SENHA';\n\nconst ABA = 'Lançamentos';\nconst ABA_ORC = 'Orçamento';\nconst CAB = ['ID', 'Tipo', 'Data', 'Descrição', 'Categoria', 'Pagamento', 'Valor', 'Situação',\n             'Terá reembolso', 'Reembolso recebido', 'Grupo', 'Parcela', 'Vencimento da fatura'];\nconst N = CAB.length;\n\nfunction abaLanc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA);\n  if (!sh) {\n    sh = ss.insertSheet(ABA);\n    // colunas de texto puro (evita que \"2/6\" vire data ou \"=...\" vire fórmula)\n    ['A', 'B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('@'));\n    sh.getRange('C:C').setNumberFormat('yyyy-mm-dd');\n    ['G', 'J'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('R$ #,##0.00'));\n    sh.appendRow(CAB);\n    sh.setFrozenRows(1);\n    sh.getRange(1, 1, 1, N).setFontWeight('bold');\n    sh.hideColumns(1);\n    sh.hideColumns(11);\n  }\n  if (sh.getRange(1, 13).getValue() !== CAB[12]) {   // planilha criada em versão anterior: acrescenta a coluna nova\n    sh.getRange('M:M').setNumberFormat('@');\n    sh.getRange(1, 13).setValue(CAB[12]).setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaOrc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA_ORC);\n  if (!sh) {\n    sh = ss.insertSheet(ABA_ORC);\n    sh.getRange('A:B').setNumberFormat('@');\n    sh.getRange('C:C').setNumberFormat('R$ #,##0.00');\n    sh.appendRow(['Mês', 'Categoria', 'Planejado']);\n    sh.setFrozenRows(1);\n    sh.getRange('A1:C1').setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaCfg_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName('Config');\n  if (!sh) { sh = ss.insertSheet('Config'); sh.getRange('A1').setValue('Configurações do app (categorias, cartões e benefício) - não edite'); }\n  return sh;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction tipoLabel_(it) {\n  if (it.tipo === 'receita') return 'Receita';\n  return /^\\s*(aporte|reserva)/i.test(String(it.cat)) ? 'Investimento' : 'Despesa';\n}\n\nfunction sit_(it) {\n  if (it.st === 'pend') return 'Pendente';\n  return it.tipo === 'receita' ? 'Recebida' : 'Pago';\n}\n\nfunction checarSenha_(t) {\n  if (SENHA === 'TROQUE-ESTA-SENHA') return 'defina a SENHA no script';\n  if (typeof t !== 'string' || t !== SENHA) return 'senha incorreta';\n  return null;\n}\n\nfunction doPost(e) {\n  let body;\n  try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'requisição inválida' }); }\n  const negado = checarSenha_(body && body.token);   // antes de tocar na planilha\n  if (negado) return json_({ ok: false, error: negado });\n  if (body.action === 'list') return listar_();\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    if (body.action !== 'sync') return json_({ ok: false, error: 'ação inválida' });\n\n    // ---- lançamentos (lê a planilha uma vez, ajusta na memória e grava em bloco) ----\n    const sh = abaLanc_();\n    const last = sh.getLastRow();\n    const dados = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues() : [];\n    const pos = {};\n    dados.forEach((r, i) => { pos[String(r[0])] = i; });\n    const apagar = {};\n    const novas = [];\n    const posNova = {};\n    let mudou = false;\n    (body.items || []).forEach(it => {\n      const k = String(it.id);\n      const p = pos[k];\n      if (it.del) {\n        if (p !== undefined) { apagar[p] = true; mudou = true; }\n        return;\n      }\n      const linha = [\n        it.id, tipoLabel_(it), it.data, it.desc || '', it.cat || '',\n        it.pag || '', Number(it.valor) || 0, sit_(it), it.reemb ? 'Sim' : 'Não',\n        Number(it.reembRec) || 0, it.grupo || '', it.parc || '', it.venc || ''\n      ];\n      if (p !== undefined) { dados[p] = linha; delete apagar[p]; mudou = true; }\n      else if (posNova[k] !== undefined) novas[posNova[k]] = linha;\n      else { posNova[k] = novas.length; novas.push(linha); }\n    });\n    let finais = dados;\n    if (mudou) {\n      finais = dados.filter((_, i) => !apagar[i]);\n      if (finais.length) sh.getRange(2, 1, finais.length, N).setValues(finais);\n      const sobra = dados.length - finais.length;\n      if (sobra > 0) sh.deleteRows(finais.length + 2, sobra);   // remove as linhas do final de uma vez\n    }\n    if (novas.length) sh.getRange(finais.length + 2, 1, novas.length, N).setValues(novas);\n\n    // ---- orçamento (mescla por mês + categoria) ----\n    if (body.orc) {\n      const so = abaOrc_();\n      const lo = so.getLastRow();\n      const mapa = {};\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).getValues().forEach(r => { mapa[r[0] + '|' + r[1]] = [String(r[0]), String(r[1]), Number(r[2]) || 0]; });\n      body.orc.forEach(o => { mapa[o.mes + '|' + o.cat] = [String(o.mes), String(o.cat), Number(o.valor) || 0]; });\n      const linhas = Object.keys(mapa).sort().map(k => mapa[k]);\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).clearContent();\n      if (linhas.length) so.getRange(2, 1, linhas.length, 3).setValues(linhas);\n    }\n    // ---- configurações (categorias, cartões, benefício) ----\n    if (body.config) abaCfg_().getRange('A2').setNumberFormat('@').setValue(JSON.stringify(body.config));\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n// Acesso por endereço (navegador) não devolve dados: o app usa POST com senha.\nfunction doGet(e) {\n  return json_({ ok: false, error: 'acesso negado' });\n}\n\nfunction listar_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const tz = ss.getSpreadsheetTimeZone();\n  const sh = abaLanc_();\n  const last = sh.getLastRow();\n  const items = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues().map(r => ({\n    id: String(r[0]),\n    tipo: String(r[1]).toLowerCase() === 'receita' ? 'receita' : 'despesa',\n    data: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : String(r[2]),\n    desc: String(r[3]), cat: String(r[4]), pag: String(r[5]),\n    valor: Number(r[6]) || 0,\n    st: r[7] === 'Pendente' ? 'pend' : 'ok',\n    reemb: r[8] === 'Sim' || Number(r[8]) > 0, reembRec: Number(r[9]) || 0,\n    grupo: String(r[10]), parc: String(r[11]), venc: String(r[12] || '')\n  })) : [];\n  const so = abaOrc_();\n  const lo = so.getLastRow();\n  const orc = lo > 1 ? so.getRange(2, 1, lo - 1, 3).getValues().map(r => ({ mes: String(r[0]), cat: String(r[1]), valor: Number(r[2]) || 0 })) : [];\n  let config = null;\n  try { const v = abaCfg_().getRange('A2').getValue(); config = v ? JSON.parse(String(v)) : null; } catch (err) { config = null; }\n  return json_({ ok: true, items: items, orc: orc, config: config });\n}\n";
 function fillRn(){$('#rnOld').innerHTML=[...new Set([...cats,...catsR])].map(opt).join('')}
 $('#renomeia').onclick=()=>{
   const a=$('#rnOld').value,b=$('#rnNew').value.trim();
