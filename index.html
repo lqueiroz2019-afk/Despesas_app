@@ -59,9 +59,17 @@ input.big{font-size:26px;font-weight:700}
 .bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0 4px}
 .bar i{display:block;height:100%;background:var(--pri);width:0}
 .bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
-.brow{margin-bottom:14px}
-.brow .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.brow input{width:130px;text-align:right}
+.brow{padding:12px 0;border-top:1px solid var(--line)}.brow:first-child{border-top:0}
+.brow .t{display:flex;align-items:center;gap:10px}.brow .t .d{width:10px;height:10px;border-radius:50%;flex:none}.brow .t b{flex:1;font-size:16px}
+.brow input{width:104px;text-align:right;padding:8px 10px;font-size:15px;font-weight:600}
+.brow .m{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut);margin:7px 0 5px 20px}.brow .m .ok{color:var(--ok)}.brow .m .w{color:var(--warn)}.brow .m .x{color:var(--bad)}
+.brow .bar{height:7px;border-radius:5px;margin:0 0 0 20px}
+.sug{display:inline-block;margin:6px 0 0 20px;font-size:12.5px;color:var(--pri);border:1px dashed var(--pri);border-radius:999px;padding:4px 11px;background:none;cursor:pointer}
+.oh{padding:16px}.oh .l1{font-size:13px;color:var(--mut)}.oh .big{font-size:32px;font-weight:600;letter-spacing:-.5px;line-height:1.15}.oh .nt{font-size:12px;color:var(--mut)}
+.oh .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}.oh .grid3 div{font-size:12px;color:var(--mut)}.oh .grid3 b{display:block;font-size:16px;color:var(--txt);margin-top:2px}
+.oh2{display:flex;justify-content:space-between;align-items:center;gap:8px}.btn.sm{padding:9px 12px;font-size:14px;width:auto}
+#orcOutras summary{padding:10px 0;cursor:pointer}
+.inv2{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);margin-top:6px}.inv2 input{width:104px;text-align:right;font-weight:600;padding:8px 10px}
 .guia{padding-left:20px;margin:8px 0;font-size:14px;line-height:1.5}.guia li{margin:4px 0}.guia code{background:var(--line);padding:1px 5px;border-radius:5px;font-size:12px}
 .ln b{white-space:nowrap}
 .hc{padding:16px 16px 12px}.hc>summary{list-style:none;padding:0;min-height:0}.hc>summary::after{display:none}
@@ -141,6 +149,7 @@ body.t-cristal .fchip.on{background:var(--pri);color:var(--onpri)}
 body.t-cristal .sheet{background:var(--sheet);border:1px solid var(--line);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
 body.t-cristal #modal,body.t-cristal #mpick{background:rgba(10,20,15,.45)}
 body.t-cristal .vh input{font-weight:600}
+#v-orc .card{margin-bottom:12px}
   background:radial-gradient(420px 360px at 8% 0%,rgba(10,132,255,.30),transparent 70%),radial-gradient(380px 340px at 100% 18%,rgba(45,212,191,.28),transparent 70%),radial-gradient(420px 380px at 20% 100%,rgba(56,189,248,.22),transparent 70%),#eaf2fd;background-attachment:fixed}
   background:radial-gradient(420px 360px at 8% 0%,rgba(10,132,255,.42),transparent 70%),radial-gradient(380px 340px at 100% 18%,rgba(20,184,166,.28),transparent 70%),radial-gradient(420px 380px at 20% 100%,rgba(56,189,248,.20),transparent 70%),#07101f;background-attachment:fixed}}
 #toast.act{pointer-events:auto}
@@ -221,6 +230,7 @@ body.t-cristal .vh input{font-weight:600}
       <div class="only-d"><label>Pagamento</label><select id="pag"></select></div>
     </div>
     <div id="vencBox" hidden><label>Vencimento do boleto (opcional)</label><input id="venc" type="date"></div>
+    <div id="moBox"><label>Contar no orçamento de</label><select id="mo"></select></div>
     <div class="row2" id="rowDS">
       <div id="stBox"><label>Situação</label><select id="st"></select></div>
       <div id="dataBox"><label>Data (1ª parcela)</label><input id="data" type="date"></div>
@@ -250,14 +260,15 @@ body.t-cristal .vh input{font-weight:600}
 
 <!-- ORÇAMENTO -->
 <section id="v-orc" class="view">
+  <div class="card oh" id="orcTop"></div>
   <div class="card">
-    <b>Planejamento do mês</b>
-    <div class="mut">Quanto pretende gastar em cada categoria. O que já foi reembolsado é descontado do gasto. Você recebe um alerta ao chegar em 80% e ao atingir o limite.</div>
-    <div style="margin-top:12px" id="orcList"></div>
-    <div class="ln"><span>Total planejado</span><b id="orcPlan"></b></div>
-    <div class="ln"><span>Total gasto (pago + pendente, líquido de reembolsos recebidos)</span><b id="orcGasto"></b></div>
+    <div class="oh2"><b>Categorias</b><button class="btn sec sm" id="sugTudo">Sugerir tudo</button></div>
+    <div class="mut" style="font-size:12.5px;margin-top:2px">Quanto pretende gastar em cada uma. O que já foi reembolsado é descontado. Você recebe um alerta ao chegar em 80% e ao atingir o limite.</div>
+    <div id="orcList"></div>
+    <details id="orcOutras" hidden><summary class="mut" id="orcOutrasT"></summary><div id="orcOutrasList"></div></details>
     <button class="btn sec" id="copiaOrc">Copiar planejamento do mês anterior</button>
   </div>
+  <div class="card" id="orcInv"></div>
 </section>
 
 <!-- AJUSTES -->
@@ -339,6 +350,7 @@ body.t-cristal .vh input{font-weight:600}
   </div>
   <div class="row2">
     <div><label>Data</label><input id="e_data" type="date"></div>
+    <div id="e_moBox"><label>Contar no orçamento de</label><select id="e_mo"></select></div>
     <div id="e_vencBox" hidden><label>Vencimento do boleto (opcional)</label><input id="e_venc" type="date"></div>
     <div><label>Situação</label><select id="e_st"></select></div>
   </div>
@@ -508,7 +520,8 @@ const live=()=>items.filter(i=>!i.del);
 const touch=it=>{it.rev=(it.rev||0)+1;it.sync=false};
 
 // ---------- cálculos ----------
-const gastoCat=(m,cat)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===cat&&i.data.startsWith(m)).reduce((s,i)=>s+i.valor-i.reembRec,0));   // gasto líquido: desconta o reembolso já recebido
+const bm=i=>i.mo||i.data.slice(0,7);   // mês em que a despesa pesa no orçamento (padrão: mês da compra)
+const gastoCat=(m,cat)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===cat&&bm(i)===m).reduce((s,i)=>s+i.valor-i.reembRec,0));   // gasto líquido: desconta o reembolso já recebido
 function calc(m){
   const r={rec:0,recOk:0,recPend:0,pagas:0,pend:0,reRec:0,inv:0,invOk:0,invPend:0,byCat:{}};
   live().filter(i=>i.data.startsWith(m)).forEach(i=>{
@@ -517,16 +530,17 @@ function calc(m){
     else{
       if(i.st==='ok')r.pagas+=i.valor;else r.pend+=i.valor;
       r.reRec+=i.reembRec;
-      r.byCat[i.cat]=(r.byCat[i.cat]||0)+i.valor-i.reembRec;
     }
   });
+  live().forEach(i=>{if(i.tipo==='despesa'&&!isInv(i.cat)&&bm(i)===m)r.byCat[i.cat]=(r.byCat[i.cat]||0)+i.valor-i.reembRec});
   const plan=orc[m]||{};
   r.prev=0;
-  new Set([...Object.keys(plan),...Object.keys(r.byCat)]).forEach(c=>{if(!isInv(c))r.prev+=Math.max(plan[c]||0,r.byCat[c]||0)});
+  new Set([...Object.keys(plan),...Object.keys(r.byCat)]).forEach(c=>{if(!isInv(c)&&c[0]!=='@')r.prev+=Math.max(plan[c]||0,r.byCat[c]||0)});
   r.gasto=Object.values(r.byCat).reduce((s,v)=>s+v,0);   // líquido de reembolsos recebidos
-  r.planTotal=Object.entries(plan).reduce((s,[c,v])=>s+(isInv(c)?0:(v||0)),0);
+  r.planTotal=Object.entries(plan).reduce((s,[c,v])=>s+(isInv(c)||c[0]==='@'?0:(v||0)),0);
+  r.invPlan=plan['@invest']||0;r.invRest=r.invPlan>0?Math.max(r.invPend,r.invPlan-r.invOk):r.invPend;   // meta de investimento do mês
   r.saldoAtual=r.recOk-r.pagas+r.reRec-r.invOk;
-  r.saldoPrev=r.rec-r.prev-r.inv;   // prev já está líquido dos reembolsos recebidos
+  r.saldoPrev=r.rec-r.prev-r.invOk-r.invRest;   // prev já está líquido dos reembolsos recebidos
   Object.keys(r).forEach(k=>{if(typeof r[k]==='number')r[k]=r2(r[k])});
   return r;
 }
@@ -625,7 +639,7 @@ async function sync(manual){
   try{
     for(let k=0;k<lotes;k++){
       const part=pend.slice(k*LOTE,(k+1)*LOTE);
-      const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',del:!!i.del}))};
+      const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',mo:i.mo||'',del:!!i.del}))};
       if(k===0){if(od)body.orc=flatOrc();if(cd)body.config=cfgObj()}
       if(lotes>1)$('#status').textContent=`Enviando ${Math.min((k+1)*LOTE,pend.length)} de ${pend.length}...`;
       await api(body,'Sincronização'+(lotes>1?` (lote ${k+1}/${lotes})`:''));
@@ -646,7 +660,7 @@ async function sync(manual){
 function rowHTML(i,ano=false,semData=false){
   const r=i.tipo==='receita',inv=!r&&isInv(i.cat);
   const topo=r?(i.st==='pend'?'Receita prevista':'Receita recebida'):[semData?'':(ano?fmtD(i.data):fmtD(i.data).slice(0,5)),i.pag||'À vista',i.venc?'vence '+fmtD(i.venc).slice(0,5):''].filter(Boolean).join(' · ');
-  const base=[esc(i.cat),inv?'investimento':'',i.grupo==='auto'?'automático':'',(!r&&!inv&&i.reemb)?(i.reembRec>0.004?`↩ reembolsado ${brl(i.reembRec)}`:'↩ aguardando reembolso'):''].filter(Boolean).join(' · ');
+  const base=[esc(i.cat),inv?'investimento':'',i.grupo==='auto'?'automático':'',(!r&&!inv&&i.mo&&i.mo!==i.data.slice(0,7))?`orçamento de ${MES3[+i.mo.slice(5)-1]}`:'',(!r&&!inv&&i.reemb)?(i.reembRec>0.004?`↩ reembolsado ${brl(i.reembRec)}`:'↩ aguardando reembolso'):''].filter(Boolean).join(' · ');
   return `<div class="item li" data-id="${i.id}"><i class="d" style="background:${catCor(i.cat)}"></i><div class="tx"><small>${r?topo:esc(topo)}</small><b>${esc(i.desc||i.cat)}${i.parc?` <small class="pc">(${i.parc})</small>`:''}</b><em>${base}</em></div><div class="rt"><div class="am"><div class="v ${r?'pos':inv?'inv':'neg'}">${r?'+':'−'} ${brl(i.valor)}</div>${i.st==='pend'&&!r?'<span class="s">pendente</span>':''}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
 }
 // cor de cada categoria: a mesma do Resumo (ordem de gasto do mês aberto); fora do Resumo, cor neutra
@@ -655,7 +669,7 @@ var _cc={m:'',k:'',map:{}};
 function catCor(c){
   const key=mes;
   if(_cc.k!==key){
-    const por={};live().filter(i=>i.tipo==='despesa'&&i.data.startsWith(mes)).forEach(i=>{por[i.cat]=(por[i.cat]||0)+i.valor-(isInv(i.cat)?0:i.reembRec)});
+    const por={};live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).forEach(i=>{por[i.cat]=(por[i.cat]||0)+i.valor-(isInv(i.cat)?0:i.reembRec)});
     const map={};Object.entries(por).filter(x=>x[1]>0.004).sort((a,b)=>b[1]-a[1]).forEach(([k],n)=>{map[k]=PAL[Math.min(n,8)]});
     _cc={m:mes,k:key,map};
   }
@@ -709,7 +723,7 @@ function aPagarCard(){
 function resumoCard(){
   // onde o dinheiro foi: pago + lançado no mês (crédito pela data da compra), líquido de reembolsos, com investimentos
   const por={},plan=orc[mes]||{};
-  live().filter(i=>i.tipo==='despesa'&&i.data.startsWith(mes)).forEach(i=>{por[i.cat]=(por[i.cat]||0)+i.valor-(isInv(i.cat)?0:i.reembRec)});
+  live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).forEach(i=>{por[i.cat]=(por[i.cat]||0)+i.valor-(isInv(i.cat)?0:i.reembRec)});
   const l=Object.entries(por).map(([k,v])=>[k,r2(v)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),tot=l.reduce((a,x)=>a+x[1],0);
   const top=l.slice(0,8),resto=l.slice(8),outras=r2(resto.reduce((a,x)=>a+x[1],0));
   const ln=[...top.map(([k,v],i)=>({k,v,cor:PAL[i]})),...(outras>0?[{k:'Outras',v:outras,cor:PAL[8],n:resto.length}]:[])];
@@ -724,10 +738,10 @@ function renderPainel(){
   const ini=saldoTotal(mes),pa=pendAnteriores(mes),sa=saldoTotal();
   const pagas=r2(c.pagas+c.invOk-c.reRec);                                   // despesas pagas (+ investimentos feitos − reembolsos recebidos)
   const restante=Math.max(0,r2(c.prev-(c.pagas-c.reRec))),semLanc=Math.max(0,r2(restante-c.pend));
-  const fim=r2(sa+pa+c.recPend-restante-c.invPend);
+  const fim=r2(sa+pa+c.recPend-restante-c.invRest);
   const cl=v=>v<0?'neg':'pos',sg=v=>(v<0?'− ':'+ ')+brl(Math.abs(v));
   const info=t=>`<i class="inf" title="${t}" data-i="${t}">i</i>`;
-  const ap=r2(restante+c.invPend),base=Math.max(c.rec,pagas+ap,1),pc=v=>Math.min(100,Math.max(0,v/base*100));
+  const ap=r2(restante+c.invRest),base=Math.max(c.rec,pagas+ap,1),pc=v=>Math.min(100,Math.max(0,v/base*100));
   const previsao=`<div class="sec">Previsão no fim do mês</div><div class="rows">
      <div class="ln"><span>Saldo atual</span><b class="${cl(sa)}">${brl(sa)}</b></div>
      ${pa?`<div class="ln"><span>Pendências de meses anteriores</span><b class="${cl(pa)}">${sg(pa)}</b></div>`:''}
@@ -735,7 +749,7 @@ function renderPainel(){
      <div class="ln"><span>Despesas previstas ${info('orçamento do mês ainda não efetuado')}</span><b class="neg">− ${brl(restante)}</b></div>
      <div class="ln sub lk" data-lp="pend"><span>↳ Despesas pendentes (já lançadas) ›</span><b class="neg">${brl(c.pend)}</b></div>
      <div class="ln sub"><span>↳ Orçamento ainda sem lançamento</span><b class="neg">${brl(semLanc)}</b></div>
-     ${c.invPend?`<div class="ln"><span>Investimentos previstos</span><b class="neg">− ${brl(c.invPend)}</b></div>`:''}
+     ${c.invRest?`<div class="ln"><span>Investimentos previstos</span><b class="neg">− ${brl(c.invRest)}</b></div>`:''}
      ${has?'':'<button class="btn sec" data-go="orc">Definir planejamento do mês</button>'}</div>`;
   const saldo=atual?`<div class="sec">Saldo atual</div><div class="rows">
      <div class="ln"><span>Saldo inicial do mês</span><b class="${cl(ini)}">${brl(ini)}</b></div>
@@ -801,23 +815,42 @@ function renderRecentes(){
   $('#recentes').innerHTML=L.map(x=>rowHTML(x)).join('')||'<p class="mut">Nenhum lançamento ainda.</p>';
 }
 
-function updRow(row){
-  const c=row.dataset.cat,plan=(orc[mes]||{})[c]||0,g=gastoCat(mes,c),p=plan>0?g/plan:0,bar=row.querySelector('.bar i');
-  bar.style.width=Math.min(100,p*100)+'%';
-  bar.className=plan>0&&p>=1?'bad':plan>0&&p>=0.8?'warn':'';
-  row.querySelector('.sub').textContent=plan>0?`${brl(g)} de ${brl(plan)} · ${Math.round(p*100)}%${p>=1?' ⚠️':''}`:g>0?`${brl(g)} gastos (sem planejamento)`:'';
+const mesMenos=(m,n)=>mesAdd(m,-n);
+function sugestao(c){   // média dos últimos 6 meses (só conta meses em que houve despesa)
+  let tot=0,n=0;
+  for(let k=1;k<=6;k++){const m=mesMenos(mes,k);if(live().some(i=>i.tipo==='despesa'&&bm(i)===m)){n++;tot+=gastoCat(m,c)}}
+  return n?Math.round(tot/n/10)*10:0;
 }
-function updTotaisOrc(){
-  const c=calc(mes);$('#orcPlan').textContent=brl(c.planTotal);$('#orcGasto').textContent=brl(c.gasto);
+function orcRow(c,plan,cor){
+  const p=plan[c]||0,g=gastoCat(mes,c),u=p>0?g/p*100:0,rest=r2(p-g),cl=u>=100?'x':u>=80?'w':'ok',sg=(!p)?sugestao(c):0;
+  return `<div class="brow" data-cat="${esc(c)}"><div class="t"><i class="d" style="background:${cor}"></i><b>${esc(c)}</b><input inputmode="decimal" placeholder="0,00" value="${p?dec(p):''}" aria-label="Planejado para ${esc(c)}"></div>
+   ${p>0?`<div class="m"><span>${brl(g)} de ${brl(p)} · ${Math.round(u)}%</span><span class="${cl}">${rest>=0?'restam '+brl(rest):brl(-rest)+' acima'}</span></div><div class="bar"><i class="${u>=100?'bad':u>=80?'warn':''}" style="width:${Math.min(100,u)}%"></i></div>`
+   :`<div class="m"><span>${g>0?brl(g)+' gastos (sem planejamento)':'sem planejamento'}</span></div>`}
+   ${sg>0?`<button class="sug" data-sug="${esc(c)}" data-v="${sg}">Sugerir ${brl(sg)} · média de 6 meses</button>`:''}</div>`;
 }
 function renderOrc(){
   const ac=document.activeElement;
-  if(ac&&ac.closest&&ac.closest('#orcList')){$$('#orcList .brow').forEach(updRow);updTotaisOrc();return}
-  const plan=orc[mes]||{},usadas=live().filter(i=>i.tipo==='despesa'&&i.data.startsWith(mes)).map(i=>i.cat);
-  const lista=[...new Set([...cats,...Object.keys(plan).filter(k=>plan[k]>0),...usadas])].filter(c=>!isInv(c));
-  $('#orcList').innerHTML=lista.map(c=>`<div class="brow" data-cat="${esc(c)}"><div class="top"><span>${esc(c)}</span><input inputmode="decimal" placeholder="0,00" value="${plan[c]?dec(plan[c]):''}"></div><div class="bar"><i></i></div><div class="mut sub"></div></div>`).join('');
-  $$('#orcList .brow').forEach(updRow);updTotaisOrc();
+  if(ac&&ac.closest&&ac.closest('#v-orc')&&ac.tagName==='INPUT')return;   // não reconstrói enquanto digita
+  const plan=orc[mes]||{},c=calc(mes);
+  const usadas=live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).map(i=>i.cat);
+  const todas=[...new Set([...cats,...Object.keys(plan).filter(k=>plan[k]>0&&k[0]!=='@'),...usadas])].filter(x=>!isInv(x));
+  const R=todas.map(x=>({c:x,p:plan[x]||0,g:gastoCat(mes,x)}));
+  const ativos=R.filter(r=>r.p>0||r.g>0).sort((a,b)=>b.p-a.p||b.g-a.g),outros=R.filter(r=>!(r.p>0||r.g>0));
+  const tp=c.planTotal,tg=r2(R.reduce((a,r)=>a+r.g,0)),pc=tp>0?tg/tp*100:0,rest=r2(tp-tg);
+  $('#orcTop').innerHTML=`<div class="l1">Orçamento de ${esc(mesNome(mes))}</div><div class="big">${brl(tp)}</div><div class="nt">total planejado nas categorias</div>
+   ${tp>0?`<div class="mbar"><i style="width:${Math.min(100,pc)}%;background:${pc>=100?'var(--bad)':pc>=80?'var(--warn)':'var(--pri)'}"></i></div>`:''}
+   <div class="grid3"><div>Gasto<b>${brl(tg)}</b></div><div>${rest>=0?'Restam':'Acima'}<b class="${rest<0?'neg':'pos'}">${brl(Math.abs(rest))}</b></div><div>Usado<b>${tp>0?Math.round(pc)+'%':'—'}</b></div></div>`;
+  const cor=c2=>catCor(c2);
+  $('#orcList').innerHTML=ativos.map(r=>orcRow(r.c,plan,cor(r.c))).join('')||'<p class="mut">Nenhuma categoria com planejamento ou gasto neste mês.</p>';
+  $('#orcOutras').hidden=!outros.length;$('#orcOutrasT').textContent=`Outras categorias (${outros.length})`;
+  $('#orcOutrasList').innerHTML=outros.map(r=>orcRow(r.c,plan,PAL[8])).join('');
+  const meta=plan['@invest']||0,falta=Math.max(0,r2(meta-c.invOk));
+  $('#orcInv').innerHTML=`<b>Investimentos do mês</b><div class="mut" style="font-size:12.5px;margin-top:2px">Aportes e reservas que pretende fazer. Entram na previsão do Painel.</div>
+   <div class="inv2"><span>Meta do mês</span><input id="invMeta" inputmode="decimal" placeholder="0,00" value="${meta?dec(meta):''}"></div>
+   <div class="inv2"><span>Já investido</span><b>${brl(c.invOk)}</b></div>
+   ${meta>0?`<div class="inv2"><span>Falta investir</span><b>${brl(falta)}</b></div>`:''}`;
 }
+function setPlano(cat,v){orc[mes]=orc[mes]||{};orc[mes][cat]=v>0?r2(v):0;orcRev++;orcDirty=true;saveOrc()}
 
 function renderStatus(){
   const pend=items.filter(i=>!i.sync).length+(orcDirty?1:0)+(cfgDirty?1:0);
@@ -844,7 +877,7 @@ document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classL
 
 // ---------- formulário de lançamento ----------
 function setTipo(t){
-  tipo=t;$('#vh').classList.toggle('rec',t==='receita');
+  tipo=t;fillMo($('#mo'),'');$('#vh').classList.toggle('rec',t==='receita');
   $$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const lc=LS.get('lastCat_'+t,'');
   $('#cat').innerHTML=(t==='despesa'?cats:catsR).map(opt).join('');
@@ -853,10 +886,15 @@ function setTipo(t){
   tgInv();
   atualizaPag();prevParc();
 }
-function tgInv(){$('#rmBox').hidden=tipo!=='despesa'||isInv($('#cat').value)}   // investimento não tem reembolso
+function tgInv(){$('#rmBox').hidden=tipo!=='despesa'||isInv($('#cat').value);$('#moBox').hidden=tipo!=='despesa'||isInv($('#cat').value)}   // investimento não tem reembolso
 // Quando perguntar Situação e Data:
 //  receita ........ Situação; Data só se "Prevista"       À vista ....... Situação (realizada/prevista); Data só se "Prevista"
 //  Boleto ......... Situação e Data                       Crédito ........ nada (hoje, pela regra da fatura, pendente)
+function fillMo(sel,cur){   // opções: padrão + mês passado até daqui a 12 meses
+  const base=curMes(),l=[];for(let n=-1;n<=12;n++)l.push(mesAdd(base,n));
+  if(cur&&!l.includes(cur))l.push(cur);
+  sel.innerHTML='<option value="">Mês da compra (padrão)</option>'+l.map(m=>`<option value="${m}">${esc(mesNome(m))}</option>`).join('');sel.value=cur||'';
+}
 function modoData(){
   const p=$('#pag').value,pend=$('#st').value==='pend';
   if(tipo==='receita')return{st:true,data:pend};
@@ -909,15 +947,15 @@ function salvar(){
   const novos=[];
   for(let i=0;i<n;i++){
     const data=addMonths(d0,i);
-    novos.push({id:uid(),tipo,data,desc:$('#desc').value.trim(),cat:$('#cat').value,pag:pg,valor:vs[i],st:cart?'pend':((sel==='ok'&&data<=t)?'ok':'pend'),venc:cart?fatura(cart,data).venc:(pg==='Boleto'&&$('#venc').value?addMonths($('#venc').value,i):''),reemb:flag,reembRec:0,grupo:g,parc:n>1?`${i+1}/${n}`:'',sync:false,rev:0});
+    novos.push({id:uid(),tipo,data,desc:$('#desc').value.trim(),cat:$('#cat').value,pag:pg,valor:vs[i],st:cart?'pend':((sel==='ok'&&data<=t)?'ok':'pend'),venc:cart?fatura(cart,data).venc:(pg==='Boleto'&&$('#venc').value?addMonths($('#venc').value,i):''),mo:(tipo==='despesa'&&!isInv($('#cat').value)&&$('#mo').value)?addMonths($('#mo').value+'-01',i).slice(0,7):'',reemb:flag,reembRec:0,grupo:g,parc:n>1?`${i+1}/${n}`:'',sync:false,rev:0});
   }
   items.push(...novos);
   LS.set('lastCat_'+tipo,$('#cat').value);if(tipo==='despesa')LS.set('lastPag',$('#pag').value);
   save();
-  $('#valor').value='';$('#desc').value='';$('#parc').value='1';$('#rm').value='nao';$('#data').value=hoje();$('#venc').value='';$('#st').value='ok';
+  $('#valor').value='';$('#desc').value='';$('#parc').value='1';$('#rm').value='nao';$('#data').value=hoje();$('#venc').value='';$('#mo').value='';$('#st').value='ok';
   atualizaPag();prevParc();render();
   toast(n>1?`${n} parcelas lançadas ✓`:'Salvo ✓');
-  if(tipo==='despesa')alertas(novos.map(x=>({m:x.data.slice(0,7),cat:x.cat})));
+  if(tipo==='despesa')alertas(novos.map(x=>({m:bm(x),cat:x.cat})));
   sync();
 }
 
@@ -939,6 +977,7 @@ function openEdit(id){
   $('#e_cat').innerHTML=[...new Set([...lc,it.cat])].map(opt).join('');$('#e_cat').value=it.cat;
   $('#e_pag').innerHTML=[...new Set([...pagsLista(),...(it.pag?[it.pag]:[])])].map(opt).join('');if(it.pag)$('#e_pag').value=it.pag;
   $('#e_pagBox').hidden=!d;$('#e_reBox').hidden=!d||isInv(it.cat);
+  fillMo($('#e_mo'),it.mo||'');$('#e_moBox').hidden=!d||isInv(it.cat);
   $('#e_data').value=it.data;$('#e_venc').value=it.pag==='Boleto'?(it.venc||''):'';$('#e_vencBox').hidden=!(d&&it.pag==='Boleto');
   $('#e_st').innerHTML=d?'<option value="ok">Pago</option><option value="pend">Pendente</option>':'<option value="ok">Recebida</option><option value="pend">Prevista</option>';
   $('#e_st').value=it.st;
@@ -964,15 +1003,15 @@ function salvaEdit(){
   const pagN=it.tipo==='despesa'?$('#e_pag').value:'',dataN=$('#e_data').value||it.data,cartN=cartaoDe(pagN),d0=it.data;
   const novo={valor:r2(v),desc:$('#e_desc').value.trim(),cat:$('#e_cat').value,pag:pagN,reemb:re};
   const mud=Object.keys(novo).filter(k=>novo[k]!==it[k]);   // só propaga o que você realmente mudou
-  const afet=[{m:d0.slice(0,7),cat:it.cat}];
+  const afet=[{m:bm(it),cat:it.cat}];
   const alvos=($('#e_esc').value==='seg'&&it.grupo&&it.parc)?items.filter(x=>x.grupo===it.grupo&&x.data>d0&&!x.del):[];
-  Object.assign(it,{...novo,data:dataN,st:$('#e_st').value,venc:cartN?fatura(cartN,dataN).venc:(pagN==='Boleto'?($('#e_venc').value||''):''),reembRec:r2(rr)});
-  afet.push({m:it.data.slice(0,7),cat:it.cat});touch(it);
+  Object.assign(it,{...novo,data:dataN,mo:(it.tipo==='despesa'&&!isInv(novo.cat))?($('#e_mo').value||''):'',st:$('#e_st').value,venc:cartN?fatura(cartN,dataN).venc:(pagN==='Boleto'?($('#e_venc').value||''):''),reembRec:r2(rr)});
+  afet.push({m:bm(it),cat:it.cat});touch(it);
   alvos.forEach(x=>{
-    afet.push({m:x.data.slice(0,7),cat:x.cat});
+    afet.push({m:bm(x),cat:x.cat});
     mud.forEach(k=>{x[k]=novo[k]});
     if(x.tipo==='despesa'){const c=cartaoDe(x.pag);x.venc=c?fatura(c,x.data).venc:(x.pag==='Boleto'?x.venc:'')}
-    afet.push({m:x.data.slice(0,7),cat:x.cat});touch(x);
+    afet.push({m:bm(x),cat:x.cat});touch(x);
   });
   save();closeModal();render();toast(alvos.length?`Alterações salvas em ${alvos.length+1} parcelas ✓`:'Alterações salvas ✓');
   if(it.tipo==='despesa')alertas(afet);
@@ -1049,23 +1088,29 @@ $('#e_payFat').onclick=()=>{
   l.forEach(x=>{x.st='ok';touch(x)});save();closeModal();render();toast('Fatura marcada como paga ✓');sync();
 };
 $('#e_rm').onchange=toggleRe;
-$('#e_cat').onchange=()=>{const it=items.find(i=>i.id===editId);$('#e_reBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value)};
+$('#e_cat').onchange=()=>{const it=items.find(i=>i.id===editId);$('#e_moBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value);$('#e_reBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value)};
 $('#cat').addEventListener('change',tgInv);
 $('#e_rrAll').onclick=()=>{$('#e_rrec').value=$('#e_valor').value};
 
-$('#orcList').addEventListener('change',e=>{
-  const row=e.target.closest('.brow');if(!row)return;
-  const cat=row.dataset.cat,v=parseValor(e.target.value);
-  orc[mes]=orc[mes]||{};
-  if(v>0)orc[mes][cat]=r2(v);else orc[mes][cat]=0;
-  orcRev++;orcDirty=true;saveOrc();updRow(row);updTotaisOrc();render();
-  alertas([{m:mes,cat}]);sync();
+$('#v-orc').addEventListener('change',e=>{
+  if(e.target.id==='invMeta'){setPlano('@invest',parseValor(e.target.value));render();sync();return}
+  const row=e.target.closest('.brow');if(!row||e.target.tagName!=='INPUT')return;
+  const cat=row.dataset.cat;setPlano(cat,parseValor(e.target.value));render();alertas([{m:mes,cat}]);sync();
 });
+$('#v-orc').addEventListener('click',e=>{
+  const sg=e.target.closest('[data-sug]');
+  if(sg){setPlano(sg.dataset.sug,+sg.dataset.v);render();sync();toast('Planejamento sugerido aplicado ✓')}
+});
+$('#sugTudo').onclick=()=>{
+  const plan=orc[mes]||{};let n=0;
+  [...new Set([...cats,...live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).map(i=>i.cat)])].filter(c=>!isInv(c)&&!(plan[c]>0)).forEach(c=>{const v=sugestao(c);if(v>0){setPlano(c,v);n++}});
+  render();if(n){sync();toast(`${n} categoria(s) preenchida(s) pela média de 6 meses ✓`)}else toast('Nada para sugerir: as categorias já têm planejamento ou não há histórico');
+};
 $('#copiaOrc').onclick=()=>{
   const ant=orc[mesAdd(mes,-1)];
   if(!ant||!Object.values(ant).some(v=>v>0)){toast('O mês anterior não tem planejamento');return}
   if(Object.values(orc[mes]||{}).some(v=>v>0)&&!confirm('Substituir o planejamento atual pelo do mês anterior?'))return;
-  orc[mes]={...ant};orcRev++;orcDirty=true;saveOrc();$('#orcList').innerHTML='';render();toast('Planejamento copiado ✓');sync();
+  orc[mes]={...ant};orcRev++;orcDirty=true;saveOrc();render();toast('Planejamento copiado ✓');sync();
 };
 
 $('#salvaUrl').onclick=()=>{url=$('#url').value.trim();senha=$('#senha').value;LS.set('url',url);LS.set('senha',senha);items.forEach(i=>{i.sync=false});orcDirty=true;orcRev++;cfgDirty=true;cfgRev++;LS.set('cfgDirty',true);save();saveOrc();render();sync(true)};
@@ -1170,7 +1215,7 @@ $('#salvaCartoes').onclick=()=>{
   live().filter(x=>x.tipo==='despesa'&&x.st==='pend'&&x.venc).forEach(x=>{const c=cartaoDe(x.pag);if(!c)return;const nv=fatura(c,x.data).venc;if(nv!==x.venc){x.venc=nv;touch(x);n++}});
   if(n)save();render();toast(n?`Cartões salvos · ${n} fatura(s) recalculada(s)`:'Cartões salvos ✓');markCfg();
 };
-const GS_CODE="// Cole este código em script.google.com (Extensões > Apps Script) dentro da sua planilha,\n// substituindo o código anterior.\n// Primeira vez:  Implantar > Nova implantação > App da Web\n//                Executar como: Eu | Quem pode acessar: Qualquer pessoa\n// Se já tinha implantado: Implantar > Gerenciar implantações > ícone de lápis >\n//                Versão: \"Nova versão\" > Implantar (a URL continua a mesma).\n\n// >>> DEFINA SUA SENHA AQUI (troque o texto abaixo por uma senha longa e secreta, 16+ caracteres).\n// O app só consegue ler/gravar na planilha se enviar exatamente esta senha.\n// Use a mesma senha em Ajustes > \"Senha do backup\" no app.\nconst SENHA = 'TROQUE-ESTA-SENHA';\n\nconst ABA = 'Lançamentos';\nconst ABA_ORC = 'Orçamento';\nconst CAB = ['ID', 'Tipo', 'Data', 'Descrição', 'Categoria', 'Pagamento', 'Valor', 'Situação',\n             'Terá reembolso', 'Reembolso recebido', 'Grupo', 'Parcela', 'Vencimento da fatura'];\nconst N = CAB.length;\n\nfunction abaLanc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA);\n  if (!sh) {\n    sh = ss.insertSheet(ABA);\n    // colunas de texto puro (evita que \"2/6\" vire data ou \"=...\" vire fórmula)\n    ['A', 'B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('@'));\n    sh.getRange('C:C').setNumberFormat('yyyy-mm-dd');\n    ['G', 'J'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('R$ #,##0.00'));\n    sh.appendRow(CAB);\n    sh.setFrozenRows(1);\n    sh.getRange(1, 1, 1, N).setFontWeight('bold');\n    sh.hideColumns(1);\n    sh.hideColumns(11);\n  }\n  if (sh.getRange(1, 13).getValue() !== CAB[12]) {   // planilha criada em versão anterior: acrescenta a coluna nova\n    sh.getRange('M:M').setNumberFormat('@');\n    sh.getRange(1, 13).setValue(CAB[12]).setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaOrc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA_ORC);\n  if (!sh) {\n    sh = ss.insertSheet(ABA_ORC);\n    sh.getRange('A:B').setNumberFormat('@');\n    sh.getRange('C:C').setNumberFormat('R$ #,##0.00');\n    sh.appendRow(['Mês', 'Categoria', 'Planejado']);\n    sh.setFrozenRows(1);\n    sh.getRange('A1:C1').setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaCfg_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName('Config');\n  if (!sh) { sh = ss.insertSheet('Config'); sh.getRange('A1').setValue('Configurações do app (categorias, cartões e benefício) - não edite'); }\n  return sh;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction tipoLabel_(it) {\n  if (it.tipo === 'receita') return 'Receita';\n  return /^\\s*(aporte|reserva)/i.test(String(it.cat)) ? 'Investimento' : 'Despesa';\n}\n\nfunction sit_(it) {\n  if (it.st === 'pend') return 'Pendente';\n  return it.tipo === 'receita' ? 'Recebida' : 'Pago';\n}\n\nfunction checarSenha_(t) {\n  if (SENHA === 'TROQUE-ESTA-SENHA') return 'defina a SENHA no script';\n  if (typeof t !== 'string' || t !== SENHA) return 'senha incorreta';\n  return null;\n}\n\nfunction doPost(e) {\n  let body;\n  try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'requisição inválida' }); }\n  const negado = checarSenha_(body && body.token);   // antes de tocar na planilha\n  if (negado) return json_({ ok: false, error: negado });\n  if (body.action === 'list') return listar_();\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    if (body.action !== 'sync') return json_({ ok: false, error: 'ação inválida' });\n\n    // ---- lançamentos (lê a planilha uma vez, ajusta na memória e grava em bloco) ----\n    const sh = abaLanc_();\n    const last = sh.getLastRow();\n    const dados = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues() : [];\n    const pos = {};\n    dados.forEach((r, i) => { pos[String(r[0])] = i; });\n    const apagar = {};\n    const novas = [];\n    const posNova = {};\n    let mudou = false;\n    (body.items || []).forEach(it => {\n      const k = String(it.id);\n      const p = pos[k];\n      if (it.del) {\n        if (p !== undefined) { apagar[p] = true; mudou = true; }\n        return;\n      }\n      const linha = [\n        it.id, tipoLabel_(it), it.data, it.desc || '', it.cat || '',\n        it.pag || '', Number(it.valor) || 0, sit_(it), it.reemb ? 'Sim' : 'Não',\n        Number(it.reembRec) || 0, it.grupo || '', it.parc || '', it.venc || ''\n      ];\n      if (p !== undefined) { dados[p] = linha; delete apagar[p]; mudou = true; }\n      else if (posNova[k] !== undefined) novas[posNova[k]] = linha;\n      else { posNova[k] = novas.length; novas.push(linha); }\n    });\n    let finais = dados;\n    if (mudou) {\n      finais = dados.filter((_, i) => !apagar[i]);\n      if (finais.length) sh.getRange(2, 1, finais.length, N).setValues(finais);\n      const sobra = dados.length - finais.length;\n      if (sobra > 0) sh.deleteRows(finais.length + 2, sobra);   // remove as linhas do final de uma vez\n    }\n    if (novas.length) sh.getRange(finais.length + 2, 1, novas.length, N).setValues(novas);\n\n    // ---- orçamento (mescla por mês + categoria) ----\n    if (body.orc) {\n      const so = abaOrc_();\n      const lo = so.getLastRow();\n      const mapa = {};\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).getValues().forEach(r => { mapa[r[0] + '|' + r[1]] = [String(r[0]), String(r[1]), Number(r[2]) || 0]; });\n      body.orc.forEach(o => { mapa[o.mes + '|' + o.cat] = [String(o.mes), String(o.cat), Number(o.valor) || 0]; });\n      const linhas = Object.keys(mapa).sort().map(k => mapa[k]);\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).clearContent();\n      if (linhas.length) so.getRange(2, 1, linhas.length, 3).setValues(linhas);\n    }\n    // ---- configurações (categorias, cartões, benefício) ----\n    if (body.config) abaCfg_().getRange('A2').setNumberFormat('@').setValue(JSON.stringify(body.config));\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n// Acesso por endereço (navegador) não devolve dados: o app usa POST com senha.\nfunction doGet(e) {\n  return json_({ ok: false, error: 'acesso negado' });\n}\n\nfunction listar_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const tz = ss.getSpreadsheetTimeZone();\n  const sh = abaLanc_();\n  const last = sh.getLastRow();\n  const items = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues().map(r => ({\n    id: String(r[0]),\n    tipo: String(r[1]).toLowerCase() === 'receita' ? 'receita' : 'despesa',\n    data: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : String(r[2]),\n    desc: String(r[3]), cat: String(r[4]), pag: String(r[5]),\n    valor: Number(r[6]) || 0,\n    st: r[7] === 'Pendente' ? 'pend' : 'ok',\n    reemb: r[8] === 'Sim' || Number(r[8]) > 0, reembRec: Number(r[9]) || 0,\n    grupo: String(r[10]), parc: String(r[11]), venc: String(r[12] || '')\n  })) : [];\n  const so = abaOrc_();\n  const lo = so.getLastRow();\n  const orc = lo > 1 ? so.getRange(2, 1, lo - 1, 3).getValues().map(r => ({ mes: String(r[0]), cat: String(r[1]), valor: Number(r[2]) || 0 })) : [];\n  let config = null;\n  try { const v = abaCfg_().getRange('A2').getValue(); config = v ? JSON.parse(String(v)) : null; } catch (err) { config = null; }\n  return json_({ ok: true, items: items, orc: orc, config: config });\n}\n";
+const GS_CODE="// Cole este código em script.google.com (Extensões > Apps Script) dentro da sua planilha,\n// substituindo o código anterior.\n// Primeira vez:  Implantar > Nova implantação > App da Web\n//                Executar como: Eu | Quem pode acessar: Qualquer pessoa\n// Se já tinha implantado: Implantar > Gerenciar implantações > ícone de lápis >\n//                Versão: \"Nova versão\" > Implantar (a URL continua a mesma).\n\n// >>> DEFINA SUA SENHA AQUI (troque o texto abaixo por uma senha longa e secreta, 16+ caracteres).\n// O app só consegue ler/gravar na planilha se enviar exatamente esta senha.\n// Use a mesma senha em Ajustes > \"Senha do backup\" no app.\nconst SENHA = 'TROQUE-ESTA-SENHA';\n\nconst ABA = 'Lançamentos';\nconst ABA_ORC = 'Orçamento';\nconst CAB = ['ID', 'Tipo', 'Data', 'Descrição', 'Categoria', 'Pagamento', 'Valor', 'Situação',\n             'Terá reembolso', 'Reembolso recebido', 'Grupo', 'Parcela', 'Vencimento da fatura', 'Mês do orçamento'];\nconst N = CAB.length;\n\nfunction abaLanc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA);\n  if (!sh) {\n    sh = ss.insertSheet(ABA);\n    // colunas de texto puro (evita que \"2/6\" vire data ou \"=...\" vire fórmula)\n    ['A', 'B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M', 'N'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('@'));\n    sh.getRange('C:C').setNumberFormat('yyyy-mm-dd');\n    ['G', 'J'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('R$ #,##0.00'));\n    sh.appendRow(CAB);\n    sh.setFrozenRows(1);\n    sh.getRange(1, 1, 1, N).setFontWeight('bold');\n    sh.hideColumns(1);\n    sh.hideColumns(11);\n  }\n  if (sh.getRange(1, 14).getValue() !== CAB[13]) {   // planilha de versão anterior: acrescenta a coluna \"Mês do orçamento\"\n    sh.getRange('N:N').setNumberFormat('@');\n    sh.getRange(1, 14).setValue(CAB[13]).setFontWeight('bold');\n  }\n  if (sh.getRange(1, 13).getValue() !== CAB[12]) {   // planilha criada em versão anterior: acrescenta a coluna nova\n    sh.getRange('M:M').setNumberFormat('@');\n    sh.getRange(1, 13).setValue(CAB[12]).setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaOrc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA_ORC);\n  if (!sh) {\n    sh = ss.insertSheet(ABA_ORC);\n    sh.getRange('A:B').setNumberFormat('@');\n    sh.getRange('C:C').setNumberFormat('R$ #,##0.00');\n    sh.appendRow(['Mês', 'Categoria', 'Planejado']);\n    sh.setFrozenRows(1);\n    sh.getRange('A1:C1').setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaCfg_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName('Config');\n  if (!sh) { sh = ss.insertSheet('Config'); sh.getRange('A1').setValue('Configurações do app (categorias, cartões e benefício) - não edite'); }\n  return sh;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction tipoLabel_(it) {\n  if (it.tipo === 'receita') return 'Receita';\n  return /^\\s*(aporte|reserva)/i.test(String(it.cat)) ? 'Investimento' : 'Despesa';\n}\n\nfunction sit_(it) {\n  if (it.st === 'pend') return 'Pendente';\n  return it.tipo === 'receita' ? 'Recebida' : 'Pago';\n}\n\nfunction checarSenha_(t) {\n  if (SENHA === 'TROQUE-ESTA-SENHA') return 'defina a SENHA no script';\n  if (typeof t !== 'string' || t !== SENHA) return 'senha incorreta';\n  return null;\n}\n\nfunction doPost(e) {\n  let body;\n  try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'requisição inválida' }); }\n  const negado = checarSenha_(body && body.token);   // antes de tocar na planilha\n  if (negado) return json_({ ok: false, error: negado });\n  if (body.action === 'list') return listar_();\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    if (body.action !== 'sync') return json_({ ok: false, error: 'ação inválida' });\n\n    // ---- lançamentos (lê a planilha uma vez, ajusta na memória e grava em bloco) ----\n    const sh = abaLanc_();\n    const last = sh.getLastRow();\n    const dados = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues() : [];\n    const pos = {};\n    dados.forEach((r, i) => { pos[String(r[0])] = i; });\n    const apagar = {};\n    const novas = [];\n    const posNova = {};\n    let mudou = false;\n    (body.items || []).forEach(it => {\n      const k = String(it.id);\n      const p = pos[k];\n      if (it.del) {\n        if (p !== undefined) { apagar[p] = true; mudou = true; }\n        return;\n      }\n      const linha = [\n        it.id, tipoLabel_(it), it.data, it.desc || '', it.cat || '',\n        it.pag || '', Number(it.valor) || 0, sit_(it), it.reemb ? 'Sim' : 'Não',\n        Number(it.reembRec) || 0, it.grupo || '', it.parc || '', it.venc || '', it.mo || ''\n      ];\n      if (p !== undefined) { dados[p] = linha; delete apagar[p]; mudou = true; }\n      else if (posNova[k] !== undefined) novas[posNova[k]] = linha;\n      else { posNova[k] = novas.length; novas.push(linha); }\n    });\n    let finais = dados;\n    if (mudou) {\n      finais = dados.filter((_, i) => !apagar[i]);\n      if (finais.length) sh.getRange(2, 1, finais.length, N).setValues(finais);\n      const sobra = dados.length - finais.length;\n      if (sobra > 0) sh.deleteRows(finais.length + 2, sobra);   // remove as linhas do final de uma vez\n    }\n    if (novas.length) sh.getRange(finais.length + 2, 1, novas.length, N).setValues(novas);\n\n    // ---- orçamento (mescla por mês + categoria) ----\n    if (body.orc) {\n      const so = abaOrc_();\n      const lo = so.getLastRow();\n      const mapa = {};\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).getValues().forEach(r => { mapa[r[0] + '|' + r[1]] = [String(r[0]), String(r[1]), Number(r[2]) || 0]; });\n      body.orc.forEach(o => { mapa[o.mes + '|' + o.cat] = [String(o.mes), String(o.cat), Number(o.valor) || 0]; });\n      const linhas = Object.keys(mapa).sort().map(k => mapa[k]);\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).clearContent();\n      if (linhas.length) so.getRange(2, 1, linhas.length, 3).setValues(linhas);\n    }\n    // ---- configurações (categorias, cartões, benefício) ----\n    if (body.config) abaCfg_().getRange('A2').setNumberFormat('@').setValue(JSON.stringify(body.config));\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n// Acesso por endereço (navegador) não devolve dados: o app usa POST com senha.\nfunction doGet(e) {\n  return json_({ ok: false, error: 'acesso negado' });\n}\n\nfunction listar_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const tz = ss.getSpreadsheetTimeZone();\n  const sh = abaLanc_();\n  const last = sh.getLastRow();\n  const items = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues().map(r => ({\n    id: String(r[0]),\n    tipo: String(r[1]).toLowerCase() === 'receita' ? 'receita' : 'despesa',\n    data: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : String(r[2]),\n    desc: String(r[3]), cat: String(r[4]), pag: String(r[5]),\n    valor: Number(r[6]) || 0,\n    st: r[7] === 'Pendente' ? 'pend' : 'ok',\n    reemb: r[8] === 'Sim' || Number(r[8]) > 0, reembRec: Number(r[9]) || 0,\n    grupo: String(r[10]), parc: String(r[11]), venc: String(r[12] || ''), mo: String(r[13] || '')\n  })) : [];\n  const so = abaOrc_();\n  const lo = so.getLastRow();\n  const orc = lo > 1 ? so.getRange(2, 1, lo - 1, 3).getValues().map(r => ({ mes: String(r[0]), cat: String(r[1]), valor: Number(r[2]) || 0 })) : [];\n  let config = null;\n  try { const v = abaCfg_().getRange('A2').getValue(); config = v ? JSON.parse(String(v)) : null; } catch (err) { config = null; }\n  return json_({ ok: true, items: items, orc: orc, config: config });\n}\n";
 function fillRn(){$('#rnOld').innerHTML=[...new Set([...cats,...catsR])].map(opt).join('')}
 $('#renomeia').onclick=()=>{
   const a=$('#rnOld').value,b=$('#rnNew').value.trim();
