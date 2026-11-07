@@ -816,17 +816,19 @@ function renderRecentes(){
 }
 
 const mesMenos=(m,n)=>mesAdd(m,-n);
-function sugestao(c){   // média dos últimos 6 meses (só conta meses em que houve despesa)
-  let tot=0,n=0;
-  for(let k=1;k<=6;k++){const m=mesMenos(mes,k);if(live().some(i=>i.tipo==='despesa'&&bm(i)===m)){n++;tot+=gastoCat(m,c)}}
-  return n?Math.round(tot/n/10)*10:0;
+function sugestao(c){   // mediana dos últimos 6 meses (só conta meses em que houve despesa): compras pontuais quase não pesam
+  const v=[];
+  for(let k=1;k<=6;k++){const m=mesMenos(mes,k);if(live().some(i=>i.tipo==='despesa'&&bm(i)===m))v.push(gastoCat(m,c))}
+  if(!v.length)return 0;
+  v.sort((a,b)=>a-b);const h=v.length>>1,med=v.length%2?v[h]:(v[h-1]+v[h])/2;
+  return Math.round(med/10)*10;
 }
 function orcRow(c,plan,cor){
   const p=plan[c]||0,g=gastoCat(mes,c),u=p>0?g/p*100:0,rest=r2(p-g),cl=u>=100?'x':u>=80?'w':'ok',sg=(!p)?sugestao(c):0;
   return `<div class="brow" data-cat="${esc(c)}"><div class="t"><i class="d" style="background:${cor}"></i><b>${esc(c)}</b><input inputmode="decimal" placeholder="0,00" value="${p?dec(p):''}" aria-label="Planejado para ${esc(c)}"></div>
    ${p>0?`<div class="m"><span>${brl(g)} de ${brl(p)} · ${Math.round(u)}%</span><span class="${cl}">${rest>=0?'restam '+brl(rest):brl(-rest)+' acima'}</span></div><div class="bar"><i class="${u>=100?'bad':u>=80?'warn':''}" style="width:${Math.min(100,u)}%"></i></div>`
    :`<div class="m"><span>${g>0?brl(g)+' gastos (sem planejamento)':'sem planejamento'}</span></div>`}
-   ${sg>0?`<button class="sug" data-sug="${esc(c)}" data-v="${sg}">Sugerir ${brl(sg)} · média de 6 meses</button>`:''}</div>`;
+   ${sg>0?`<button class="sug" data-sug="${esc(c)}" data-v="${sg}">Sugerir ${brl(sg)} · mediana de 6 meses</button>`:''}</div>`;
 }
 function renderOrc(){
   const ac=document.activeElement;
@@ -1104,7 +1106,7 @@ $('#v-orc').addEventListener('click',e=>{
 $('#sugTudo').onclick=()=>{
   const plan=orc[mes]||{};let n=0;
   [...new Set([...cats,...live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).map(i=>i.cat)])].filter(c=>!isInv(c)&&!(plan[c]>0)).forEach(c=>{const v=sugestao(c);if(v>0){setPlano(c,v);n++}});
-  render();if(n){sync();toast(`${n} categoria(s) preenchida(s) pela média de 6 meses ✓`)}else toast('Nada para sugerir: as categorias já têm planejamento ou não há histórico');
+  render();if(n){sync();toast(`${n} categoria(s) preenchida(s) pela mediana de 6 meses ✓`)}else toast('Nada para sugerir: as categorias já têm planejamento ou não há histórico');
 };
 $('#copiaOrc').onclick=()=>{
   const ant=orc[mesAdd(mes,-1)];
