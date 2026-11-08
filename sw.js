@@ -1,4 +1,4 @@
-const CACHE = 'despesas-v33';
+const CACHE = 'despesas-e088fc7f';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -20,7 +20,10 @@ self.addEventListener('fetch', e => {
   // rede primeiro (pega atualizações), cache como reserva offline
   e.respondWith(
     fetch(e.request)
-      .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
+      .then(r => {
+        if (r.ok && r.type === 'basic') { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}); }
+        return r;
+      })
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
   );
 });

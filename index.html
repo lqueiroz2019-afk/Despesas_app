@@ -23,12 +23,6 @@ header h1{font-size:18px;margin:0}
 #mnav b{font-size:16px}
 main{padding:12px;max-width:560px;margin:0 auto}
 .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.kpi{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.kpi.full{grid-column:1/-1}
-.kpi span{display:block;font-size:12px;color:var(--mut)}
-.kpi b{font-size:19px}
-.kpi small{display:block;color:var(--mut);font-size:11px;margin-top:2px}
 .big-n{font-size:30px;font-weight:800}
 .pos{color:var(--ok)}.neg{color:var(--bad)}
 .ln{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;border-top:1px solid var(--line)}
@@ -95,29 +89,6 @@ nav button{flex:1;padding:12px 0 10px;border:0;background:none;color:var(--mut);
 nav button span{display:block;font-size:24px;line-height:1.2}
 nav button.on{color:var(--pri);font-weight:700}
 .view{display:none}.view.on{display:block}
-.viz{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#8d8d88;--c1:var(--s1);--ink:var(--txt);--ink2:var(--mut);--grid:var(--line)}
-@media(prefers-color-scheme:dark){.viz{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#6b6b66}}
-.vinfo{margin-top:6px;font-size:14px}
-.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
-.viz h3{font-size:15px;margin:0 0 2px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mut);margin:6px 0 10px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.cbar{margin-bottom:14px}
-.cbar .t{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:5px}
-.cbar .t span:last-child{color:var(--mut);font-size:13px;white-space:nowrap}
-.track{position:relative;height:14px;background:var(--line);border-radius:7px}
-.track b{position:absolute;left:0;top:0;bottom:0;border-radius:0 7px 7px 0;background:var(--c1);min-width:3px}
-.track b.warn{background:var(--warn)}.track b.bad{background:var(--bad)}
-.track u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.7}
-.viz svg{display:block;width:100%;height:auto}
-.viz svg text{fill:var(--ink2);font:11px system-ui,sans-serif}
-.viz svg text.v{fill:var(--ink);font-size:10px}
-.viz svg text.cur{fill:var(--ink);font-weight:700}
-.viz svg line{stroke:var(--grid)}
-.viz table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.viz th,.viz td{text-align:right;padding:6px 4px;border-top:1px solid var(--line)}
-.viz th:first-child,.viz td:first-child{text-align:left}
-.viz details summary{color:var(--pri);font-size:14px;padding:10px 0 2px;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:40;max-width:90%;text-align:center}
 #toast.show{opacity:1}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end}
@@ -135,7 +106,7 @@ body.t-cristal b,body.t-cristal strong{font-weight:600}
 body.t-cristal header{background:var(--bg);color:var(--txt);padding-bottom:6px}
 body.t-cristal header h1{font-size:26px;font-weight:600;letter-spacing:-.3px}
 body.t-cristal #mnav{background:var(--bg);border-bottom:0}
-body.t-cristal .card,body.t-cristal .kpi{background:var(--card);border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,24,40,.04);border-radius:18px}
+body.t-cristal .card{background:var(--card);border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,24,40,.04);border-radius:18px}
 body.t-cristal input,body.t-cristal select,body.t-cristal textarea{background:var(--inp);color:var(--txt);border:1px solid var(--line);border-radius:12px}
 body.t-cristal .btn{background:var(--pri);color:var(--onpri);border-radius:12px;box-shadow:none}
 body.t-cristal .btn.sec{background:var(--inp);color:var(--txt);border:1px solid var(--line)}
@@ -163,13 +134,6 @@ body.t-cristal .vh input{font-weight:600}
 .colap summary::after{content:'▾';float:right;color:var(--mut);transition:transform .2s}
 .colap:not([open]) summary::after{transform:rotate(-90deg)}
 .colap.sec{margin-bottom:12px}.colap.sec>summary{padding:6px 4px;font-size:16px}
-.hero{border-radius:20px;padding:18px 18px 16px;margin-bottom:12px;color:#fff;background:linear-gradient(135deg,#3d95ff,#0b6fe8);box-shadow:0 10px 26px rgba(11,111,232,.35)}
-.hero.neg{background:linear-gradient(135deg,#ff8a98,#e5384f);box-shadow:0 10px 26px rgba(229,56,79,.30)}
-.hero span{display:block;font-size:13px;opacity:.9}.hero b{display:block;font-size:34px;font-weight:800;margin:2px 0}.hero small{font-size:12px;opacity:.85}
-.sbar{display:flex;height:12px;border-radius:8px;overflow:hidden;background:var(--line);margin:12px 0 8px}.sbar i{display:block;height:100%}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-.rs{background:rgba(127,127,127,.08);border-radius:12px;padding:10px}.rs span{display:block;font-size:12px;color:var(--mut)}.rs b{font-size:17px}.rs small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 .inv,.item .v.inv{color:var(--pri)}
 .lk{cursor:pointer}.lk:active{opacity:.6}
 #mcenter{text-align:center;display:flex;flex-direction:column;align-items:center}#mesLabel{cursor:pointer;padding:2px 8px}
@@ -202,8 +166,6 @@ body.t-cristal .vh input{font-weight:600}
 .li .tx em{display:block;font-style:normal;font-size:12.5px;color:var(--mut)}.li .tx em:empty{display:none}
 .li .am{text-align:right;flex:none}.li .am .v{font-size:16px;white-space:nowrap}.li .am .s{display:block;font-size:12px;color:var(--warn);margin-top:2px}
 .li .ckb{width:36px;height:36px;font-size:15px}
-.fprox{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding:12px 14px}
-.fprox span{display:block;font-size:12px;color:var(--mut)}.fprox b{font-size:20px}.fprox small{color:var(--mut);font-size:11px}
 </style>
 </head>
 <body class="t-cristal">
@@ -283,7 +245,7 @@ body.t-cristal .vh input{font-weight:600}
     <label>URL do aplicativo da web (Apps Script)</label>
     <input id="url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
     <label>Senha do backup (a mesma definida no script)</label>
-    <input id="senha" type="password" placeholder="senha longa e secreta" autocomplete="off">
+    <div class="row2" style="grid-template-columns:1fr auto"><input id="senha" type="password" placeholder="senha longa e secreta" autocomplete="off"><button class="btn sec" id="verSenha" type="button">Mostrar</button></div>
     <button class="btn" id="salvaUrl">Salvar e sincronizar</button>
     <button class="btn sec" id="restaurar">Restaurar da planilha</button>
     <p class="mut" id="status"></p>
@@ -388,7 +350,7 @@ function renderAviso(pend){
     if(pend>0&&dias>=7){msg=`${pend} alteração(ões) sem backup no Google há ${dias} dias.`;acao='Sincronizar';alvo='sync'}
   }else if(items.length>=20){
     const ult=LS.get('lastExport',0),dias=ult?Math.floor((agora-ult)/DIA):null;
-    if(dias===null||dias>=30){msg=dias===null?'Você ainda não fez nenhum backup dos seus lançamentos.':`Seu último backup em arquivo foi há ${dias} dias.`;acao='Fazer backup';alvo='exp'}
+    if(dias===null||dias>=7){msg=dias===null?'Você ainda não fez nenhum backup dos seus lançamentos.':`Seu último backup em arquivo foi há ${dias} dias.`;acao='Baixar backup';alvo='exp'}
   }
   if(!msg||LS.get('avisoAte',0)>agora){el.hidden=true;return}
   el.hidden=false;el.innerHTML=`<span>⚠️ ${esc(msg)}</span><span><button data-av="${alvo}">${acao}</button><button data-av="x" aria-label="Dispensar">✕</button></span>`;
@@ -396,7 +358,7 @@ function renderAviso(pend){
 document.getElementById('aviso').addEventListener('click',e=>{
   const b=e.target.closest('[data-av]');if(!b)return;
   if(b.dataset.av==='sync'){sync(true)}
-  else if(b.dataset.av==='exp'){go('cfg');setTimeout(()=>$('#exportar').scrollIntoView({block:'center'}),50)}
+  else if(b.dataset.av==='exp'){$('#exportar').click()}
   else{LS.set('avisoAte',Date.now()+864e5);renderAviso(0)}   // dispensa por 1 dia
 });
 // registro de falhas (sincronização, gravação, importação) – últimas 50
@@ -590,7 +552,7 @@ function fillAuto(){
 
 // ---------- sincronização ----------
 class ErroSync extends Error{constructor(msg,tentar){super(msg);this.tentar=!!tentar}}
-const MSG_SCRIPT={'senha incorreta':'Senha incorreta: confira a senha em Ajustes (precisa ser igual à do script).','defina a SENHA no script':'O script ainda está com a senha de exemplo. Defina a SENHA no Apps Script e implante de novo.','acesso negado':'Acesso negado pelo script.','requisição inválida':'O script recebeu um pedido inválido.','ação inválida':'O script não reconheceu a ação (versão antiga do script?).'};
+const MSG_SCRIPT={'senha incorreta':'Senha incorreta: confira a senha em Ajustes (precisa ser igual à do script).','defina a SENHA no script':'O script ainda está com a senha de exemplo. Defina a SENHA no Apps Script e implante de novo.','acesso negado':'Acesso negado pelo script.','requisição inválida':'O script recebeu um pedido inválido.','ação inválida':'O script não reconheceu a ação (versão antiga do script?).','planilha ocupada':'A planilha está ocupada no momento. Tente de novo em instantes.'};
 async function api1(body){
   const ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
   let r,txt;
@@ -604,7 +566,7 @@ async function api1(body){
   let j;
   try{j=JSON.parse(txt)}
   catch(e){throw new ErroSync(`Resposta inesperada do Google (HTTP ${r.status}). Confira se o script está implantado como "Qualquer pessoa" e se a URL termina em /exec.`,false)}
-  if(!j.ok){const m=String(j.error||'erro');throw new ErroSync(MSG_SCRIPT[m]||('O script respondeu: '+m),/lock|timeout|tempo/i.test(m))}
+  if(!j.ok){const m=String(j.error||'erro');throw new ErroSync(MSG_SCRIPT[m]||('O script respondeu: '+m),/ocupada|lock|timeout|tempo/i.test(m))}
   return j;
 }
 async function api(body,rotulo){
@@ -652,7 +614,7 @@ async function sync(manual){
     save();saveOrc();
     $('#status').textContent='Última sincronização: '+new Date().toLocaleString('pt-BR');
     if(manual)toast('Sincronizado ✓');
-  }catch(e){$('#status').textContent='Falha ao sincronizar: '+e.message+(lotes>1?' O que já foi enviado fica salvo; toque de novo para continuar.':' Seus lançamentos continuam salvos no aparelho e serão reenviados.');if(manual)toast(e.message,4500)}
+  }catch(e){$('#status').innerHTML=esc('Falha ao sincronizar: '+e.message+(lotes>1?' O que já foi enviado fica salvo; toque de novo para continuar.':' Seus lançamentos continuam salvos no aparelho e serão reenviados.'))+' <button class="btn sec" data-retry="1" type="button">Tentar de novo</button>';if(manual)toast(e.message,4500)}
   syncing=false;renderStatus();   // a tela já foi redesenhada pela ação; aqui só o indicador muda
 }
 
@@ -1095,9 +1057,9 @@ $('#cat').addEventListener('change',tgInv);
 $('#e_rrAll').onclick=()=>{$('#e_rrec').value=$('#e_valor').value};
 
 $('#v-orc').addEventListener('change',e=>{
-  if(e.target.id==='invMeta'){setPlano('@invest',parseValor(e.target.value));render();sync();return}
+  if(e.target.id==='invMeta'){setPlano('@invest',parseValor(e.target.value));e.target.blur();render();sync();return}
   const row=e.target.closest('.brow');if(!row||e.target.tagName!=='INPUT')return;
-  const cat=row.dataset.cat;setPlano(cat,parseValor(e.target.value));render();alertas([{m:mes,cat}]);sync();
+  const cat=row.dataset.cat;setPlano(cat,parseValor(e.target.value));e.target.blur();render();alertas([{m:mes,cat}]);sync();
 });
 $('#v-orc').addEventListener('click',e=>{
   const sg=e.target.closest('[data-sug]');
@@ -1121,7 +1083,7 @@ $('#restaurar').onclick=async()=>{
   try{
     const j=await api({action:'list'},'Restaurar da planilha');
     const have=new Set(items.map(i=>i.id));let n=0;
-    (j.items||[]).forEach(x=>{if(!have.has(x.id)&&itemValido(x)){items.push({reemb:0,reembRec:0,grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:true,rev:0});n++}});
+    (j.items||[]).forEach(x=>{if(!have.has(x.id)&&itemValido(x)){items.push({grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:true,rev:0});n++}});
     (j.orc||[]).forEach(o=>{orc[o.mes]=orc[o.mes]||{};if(orc[o.mes][o.cat]===undefined)orc[o.mes][o.cat]=Number(o.valor)||0});
     migPag();aplicaCfg(j.config);fillCfg();fillAuto();fillPag();setTipo(tipo);
     save();saveOrc();if(aba==='orc')$('#orcList').innerHTML='';render();toast(n+' lançamento(s) restaurado(s)');
@@ -1166,7 +1128,7 @@ $('#arq').onchange=async e=>{
     (j.items||[]).forEach(x=>{
       if(!itemValido(x)){ign++;return}
       if(have.has(x.id)){dup++;return}
-      items.push({tipo:'despesa',st:'ok',reemb:false,reembRec:0,grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:false,rev:0});n++;
+      items.push({tipo:'despesa',st:'ok',grupo:'',parc:'',...x,valor:Number(x.valor),reemb:!!x.reemb,reembRec:Number(x.reembRec)||0,sync:false,rev:0});n++;
     });
     migPag();aplicaCfg(j);
     Object.entries(j.orc||{}).forEach(([m,o])=>{orc[m]=orc[m]||{};Object.entries(o).forEach(([c,v])=>{if(orc[m][c]===undefined)orc[m][c]=v})});
@@ -1217,7 +1179,7 @@ $('#salvaCartoes').onclick=()=>{
   live().filter(x=>x.tipo==='despesa'&&x.st==='pend'&&x.venc).forEach(x=>{const c=cartaoDe(x.pag);if(!c)return;const nv=fatura(c,x.data).venc;if(nv!==x.venc){x.venc=nv;touch(x);n++}});
   if(n)save();render();toast(n?`Cartões salvos · ${n} fatura(s) recalculada(s)`:'Cartões salvos ✓');markCfg();
 };
-const GS_CODE="// Cole este código em script.google.com (Extensões > Apps Script) dentro da sua planilha,\n// substituindo o código anterior.\n// Primeira vez:  Implantar > Nova implantação > App da Web\n//                Executar como: Eu | Quem pode acessar: Qualquer pessoa\n// Se já tinha implantado: Implantar > Gerenciar implantações > ícone de lápis >\n//                Versão: \"Nova versão\" > Implantar (a URL continua a mesma).\n\n// >>> DEFINA SUA SENHA AQUI (troque o texto abaixo por uma senha longa e secreta, 16+ caracteres).\n// O app só consegue ler/gravar na planilha se enviar exatamente esta senha.\n// Use a mesma senha em Ajustes > \"Senha do backup\" no app.\nconst SENHA = 'TROQUE-ESTA-SENHA';\n\nconst ABA = 'Lançamentos';\nconst ABA_ORC = 'Orçamento';\nconst CAB = ['ID', 'Tipo', 'Data', 'Descrição', 'Categoria', 'Pagamento', 'Valor', 'Situação',\n             'Terá reembolso', 'Reembolso recebido', 'Grupo', 'Parcela', 'Vencimento da fatura', 'Mês do orçamento'];\nconst N = CAB.length;\n\nfunction abaLanc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA);\n  if (!sh) {\n    sh = ss.insertSheet(ABA);\n    // colunas de texto puro (evita que \"2/6\" vire data ou \"=...\" vire fórmula)\n    ['A', 'B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M', 'N'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('@'));\n    sh.getRange('C:C').setNumberFormat('yyyy-mm-dd');\n    ['G', 'J'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('R$ #,##0.00'));\n    sh.appendRow(CAB);\n    sh.setFrozenRows(1);\n    sh.getRange(1, 1, 1, N).setFontWeight('bold');\n    sh.hideColumns(1);\n    sh.hideColumns(11);\n  }\n  if (sh.getRange(1, 14).getValue() !== CAB[13]) {   // planilha de versão anterior: acrescenta a coluna \"Mês do orçamento\"\n    sh.getRange('N:N').setNumberFormat('@');\n    sh.getRange(1, 14).setValue(CAB[13]).setFontWeight('bold');\n  }\n  if (sh.getRange(1, 13).getValue() !== CAB[12]) {   // planilha criada em versão anterior: acrescenta a coluna nova\n    sh.getRange('M:M').setNumberFormat('@');\n    sh.getRange(1, 13).setValue(CAB[12]).setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaOrc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA_ORC);\n  if (!sh) {\n    sh = ss.insertSheet(ABA_ORC);\n    sh.getRange('A:B').setNumberFormat('@');\n    sh.getRange('C:C').setNumberFormat('R$ #,##0.00');\n    sh.appendRow(['Mês', 'Categoria', 'Planejado']);\n    sh.setFrozenRows(1);\n    sh.getRange('A1:C1').setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaCfg_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName('Config');\n  if (!sh) { sh = ss.insertSheet('Config'); sh.getRange('A1').setValue('Configurações do app (categorias, cartões e benefício) - não edite'); }\n  return sh;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction tipoLabel_(it) {\n  if (it.tipo === 'receita') return 'Receita';\n  return /^\\s*(aporte|reserva)/i.test(String(it.cat)) ? 'Investimento' : 'Despesa';\n}\n\nfunction sit_(it) {\n  if (it.st === 'pend') return 'Pendente';\n  return it.tipo === 'receita' ? 'Recebida' : 'Pago';\n}\n\nfunction checarSenha_(t) {\n  if (SENHA === 'TROQUE-ESTA-SENHA') return 'defina a SENHA no script';\n  if (typeof t !== 'string' || t !== SENHA) return 'senha incorreta';\n  return null;\n}\n\nfunction doPost(e) {\n  let body;\n  try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'requisição inválida' }); }\n  const negado = checarSenha_(body && body.token);   // antes de tocar na planilha\n  if (negado) return json_({ ok: false, error: negado });\n  if (body.action === 'list') return listar_();\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    if (body.action !== 'sync') return json_({ ok: false, error: 'ação inválida' });\n\n    // ---- lançamentos (lê a planilha uma vez, ajusta na memória e grava em bloco) ----\n    const sh = abaLanc_();\n    const last = sh.getLastRow();\n    const dados = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues() : [];\n    const pos = {};\n    dados.forEach((r, i) => { pos[String(r[0])] = i; });\n    const apagar = {};\n    const novas = [];\n    const posNova = {};\n    let mudou = false;\n    (body.items || []).forEach(it => {\n      const k = String(it.id);\n      const p = pos[k];\n      if (it.del) {\n        if (p !== undefined) { apagar[p] = true; mudou = true; }\n        return;\n      }\n      const linha = [\n        it.id, tipoLabel_(it), it.data, it.desc || '', it.cat || '',\n        it.pag || '', Number(it.valor) || 0, sit_(it), it.reemb ? 'Sim' : 'Não',\n        Number(it.reembRec) || 0, it.grupo || '', it.parc || '', it.venc || '', it.mo || ''\n      ];\n      if (p !== undefined) { dados[p] = linha; delete apagar[p]; mudou = true; }\n      else if (posNova[k] !== undefined) novas[posNova[k]] = linha;\n      else { posNova[k] = novas.length; novas.push(linha); }\n    });\n    let finais = dados;\n    if (mudou) {\n      finais = dados.filter((_, i) => !apagar[i]);\n      if (finais.length) sh.getRange(2, 1, finais.length, N).setValues(finais);\n      const sobra = dados.length - finais.length;\n      if (sobra > 0) sh.deleteRows(finais.length + 2, sobra);   // remove as linhas do final de uma vez\n    }\n    if (novas.length) sh.getRange(finais.length + 2, 1, novas.length, N).setValues(novas);\n\n    // ---- orçamento (mescla por mês + categoria) ----\n    if (body.orc) {\n      const so = abaOrc_();\n      const lo = so.getLastRow();\n      const mapa = {};\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).getValues().forEach(r => { mapa[r[0] + '|' + r[1]] = [String(r[0]), String(r[1]), Number(r[2]) || 0]; });\n      body.orc.forEach(o => { mapa[o.mes + '|' + o.cat] = [String(o.mes), String(o.cat), Number(o.valor) || 0]; });\n      const linhas = Object.keys(mapa).sort().map(k => mapa[k]);\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).clearContent();\n      if (linhas.length) so.getRange(2, 1, linhas.length, 3).setValues(linhas);\n    }\n    // ---- configurações (categorias, cartões, benefício) ----\n    if (body.config) abaCfg_().getRange('A2').setNumberFormat('@').setValue(JSON.stringify(body.config));\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n// Acesso por endereço (navegador) não devolve dados: o app usa POST com senha.\nfunction doGet(e) {\n  return json_({ ok: false, error: 'acesso negado' });\n}\n\nfunction listar_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const tz = ss.getSpreadsheetTimeZone();\n  const sh = abaLanc_();\n  const last = sh.getLastRow();\n  const items = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues().map(r => ({\n    id: String(r[0]),\n    tipo: String(r[1]).toLowerCase() === 'receita' ? 'receita' : 'despesa',\n    data: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : String(r[2]),\n    desc: String(r[3]), cat: String(r[4]), pag: String(r[5]),\n    valor: Number(r[6]) || 0,\n    st: r[7] === 'Pendente' ? 'pend' : 'ok',\n    reemb: r[8] === 'Sim' || Number(r[8]) > 0, reembRec: Number(r[9]) || 0,\n    grupo: String(r[10]), parc: String(r[11]), venc: String(r[12] || ''), mo: String(r[13] || '')\n  })) : [];\n  const so = abaOrc_();\n  const lo = so.getLastRow();\n  const orc = lo > 1 ? so.getRange(2, 1, lo - 1, 3).getValues().map(r => ({ mes: String(r[0]), cat: String(r[1]), valor: Number(r[2]) || 0 })) : [];\n  let config = null;\n  try { const v = abaCfg_().getRange('A2').getValue(); config = v ? JSON.parse(String(v)) : null; } catch (err) { config = null; }\n  return json_({ ok: true, items: items, orc: orc, config: config });\n}\n";
+const GS_CODE="// Cole este código em script.google.com (Extensões > Apps Script) dentro da sua planilha,\n// substituindo o código anterior.\n// Primeira vez:  Implantar > Nova implantação > App da Web\n//                Executar como: Eu | Quem pode acessar: Qualquer pessoa\n// Se já tinha implantado: Implantar > Gerenciar implantações > ícone de lápis >\n//                Versão: \"Nova versão\" > Implantar (a URL continua a mesma).\n\n// >>> DEFINA SUA SENHA AQUI (troque o texto abaixo por uma senha longa e secreta, 16+ caracteres).\n// O app só consegue ler/gravar na planilha se enviar exatamente esta senha.\n// Use a mesma senha em Ajustes > \"Senha do backup\" no app.\nconst SENHA = 'TROQUE-ESTA-SENHA';\n\nconst ABA = 'Lançamentos';\nconst ABA_ORC = 'Orçamento';\nconst CAB = ['ID', 'Tipo', 'Data', 'Descrição', 'Categoria', 'Pagamento', 'Valor', 'Situação',\n             'Terá reembolso', 'Reembolso recebido', 'Grupo', 'Parcela', 'Vencimento da fatura', 'Mês do orçamento'];\nconst N = CAB.length;\n\nfunction abaLanc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA);\n  if (!sh) {\n    sh = ss.insertSheet(ABA);\n    // colunas de texto puro (evita que \"2/6\" vire data ou \"=...\" vire fórmula)\n    ['A', 'B', 'D', 'E', 'F', 'H', 'I', 'K', 'L', 'M', 'N'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('@'));\n    sh.getRange('C:C').setNumberFormat('yyyy-mm-dd');\n    ['G', 'J'].forEach(c => sh.getRange(c + ':' + c).setNumberFormat('R$ #,##0.00'));\n    sh.appendRow(CAB);\n    sh.setFrozenRows(1);\n    sh.getRange(1, 1, 1, N).setFontWeight('bold');\n    sh.hideColumns(1);\n    sh.hideColumns(11);\n  }\n  if (sh.getRange(1, 14).getValue() !== CAB[13]) {   // planilha de versão anterior: acrescenta a coluna \"Mês do orçamento\"\n    sh.getRange('N:N').setNumberFormat('@');\n    sh.getRange(1, 14).setValue(CAB[13]).setFontWeight('bold');\n  }\n  if (sh.getRange(1, 13).getValue() !== CAB[12]) {   // planilha criada em versão anterior: acrescenta a coluna nova\n    sh.getRange('M:M').setNumberFormat('@');\n    sh.getRange(1, 13).setValue(CAB[12]).setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaOrc_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(ABA_ORC);\n  if (!sh) {\n    sh = ss.insertSheet(ABA_ORC);\n    sh.getRange('A:B').setNumberFormat('@');\n    sh.getRange('C:C').setNumberFormat('R$ #,##0.00');\n    sh.appendRow(['Mês', 'Categoria', 'Planejado']);\n    sh.setFrozenRows(1);\n    sh.getRange('A1:C1').setFontWeight('bold');\n  }\n  return sh;\n}\n\nfunction abaCfg_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName('Config');\n  if (!sh) { sh = ss.insertSheet('Config'); sh.getRange('A1').setValue('Configurações do app (categorias, cartões e benefício) - não edite'); }\n  return sh;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction tipoLabel_(it) {\n  if (it.tipo === 'receita') return 'Receita';\n  return /^\\s*(aporte|reserva)/i.test(String(it.cat)) ? 'Investimento' : 'Despesa';\n}\n\nfunction sit_(it) {\n  if (it.st === 'pend') return 'Pendente';\n  return it.tipo === 'receita' ? 'Recebida' : 'Pago';\n}\n\nfunction checarSenha_(t) {\n  if (SENHA === 'TROQUE-ESTA-SENHA') return 'defina a SENHA no script';\n  if (typeof t !== 'string' || t !== SENHA) return 'senha incorreta';\n  return null;\n}\n\nfunction doPost(e) {\n  let body;\n  try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'requisição inválida' }); }\n  const negado = checarSenha_(body && body.token);   // antes de tocar na planilha\n  if (negado) return json_({ ok: false, error: negado });\n  if (body.action === 'list') return listar_();\n  const lock = LockService.getScriptLock();\n  try { lock.waitLock(20000); } catch (err) { return json_({ ok: false, error: 'planilha ocupada' }); }\n  try {\n    if (body.action !== 'sync') return json_({ ok: false, error: 'ação inválida' });\n\n    // ---- lançamentos (lê a planilha uma vez, ajusta na memória e grava em bloco) ----\n    const sh = abaLanc_();\n    const last = sh.getLastRow();\n    const dados = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues() : [];\n    const pos = {};\n    dados.forEach((r, i) => { pos[String(r[0])] = i; });\n    const apagar = {};\n    const novas = [];\n    const posNova = {};\n    let mudou = false;\n    (body.items || []).forEach(it => {\n      const k = String(it.id);\n      const p = pos[k];\n      if (it.del) {\n        if (p !== undefined) { apagar[p] = true; mudou = true; }\n        return;\n      }\n      const linha = [\n        it.id, tipoLabel_(it), it.data, it.desc || '', it.cat || '',\n        it.pag || '', Number(it.valor) || 0, sit_(it), it.reemb ? 'Sim' : 'Não',\n        Number(it.reembRec) || 0, it.grupo || '', it.parc || '', it.venc || '', it.mo || ''\n      ];\n      if (p !== undefined) { dados[p] = linha; delete apagar[p]; mudou = true; }\n      else if (posNova[k] !== undefined) novas[posNova[k]] = linha;\n      else { posNova[k] = novas.length; novas.push(linha); }\n    });\n    let finais = dados;\n    if (mudou) {\n      finais = dados.filter((_, i) => !apagar[i]);\n      if (finais.length) sh.getRange(2, 1, finais.length, N).setValues(finais);\n      const sobra = dados.length - finais.length;\n      if (sobra > 0) sh.deleteRows(finais.length + 2, sobra);   // remove as linhas do final de uma vez\n    }\n    if (novas.length) sh.getRange(finais.length + 2, 1, novas.length, N).setValues(novas);\n\n    // ---- orçamento (mescla por mês + categoria) ----\n    if (body.orc) {\n      const so = abaOrc_();\n      const lo = so.getLastRow();\n      const mapa = {};\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).getValues().forEach(r => { mapa[r[0] + '|' + r[1]] = [String(r[0]), String(r[1]), Number(r[2]) || 0]; });\n      body.orc.forEach(o => { mapa[o.mes + '|' + o.cat] = [String(o.mes), String(o.cat), Number(o.valor) || 0]; });\n      const linhas = Object.keys(mapa).sort().map(k => mapa[k]);\n      if (lo > 1) so.getRange(2, 1, lo - 1, 3).clearContent();\n      if (linhas.length) so.getRange(2, 1, linhas.length, 3).setValues(linhas);\n    }\n    // ---- configurações (categorias, cartões, benefício) ----\n    if (body.config) abaCfg_().getRange('A2').setNumberFormat('@').setValue(JSON.stringify(body.config));\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n// Acesso por endereço (navegador) não devolve dados: o app usa POST com senha.\nfunction doGet(e) {\n  return json_({ ok: false, error: 'acesso negado' });\n}\n\nfunction listar_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const tz = ss.getSpreadsheetTimeZone();\n  const sh = abaLanc_();\n  const last = sh.getLastRow();\n  const items = last > 1 ? sh.getRange(2, 1, last - 1, N).getValues().map(r => ({\n    id: String(r[0]),\n    tipo: String(r[1]).toLowerCase() === 'receita' ? 'receita' : 'despesa',\n    data: r[2] instanceof Date ? Utilities.formatDate(r[2], tz, 'yyyy-MM-dd') : String(r[2]),\n    desc: String(r[3]), cat: String(r[4]), pag: String(r[5]),\n    valor: Number(r[6]) || 0,\n    st: r[7] === 'Pendente' ? 'pend' : 'ok',\n    reemb: r[8] === 'Sim' || Number(r[8]) > 0, reembRec: Number(r[9]) || 0,\n    grupo: String(r[10]), parc: String(r[11]), venc: String(r[12] || ''), mo: String(r[13] || '')\n  })) : [];\n  const so = abaOrc_();\n  const lo = so.getLastRow();\n  const orc = lo > 1 ? so.getRange(2, 1, lo - 1, 3).getValues().map(r => ({ mes: String(r[0]), cat: String(r[1]), valor: Number(r[2]) || 0 })) : [];\n  let config = null;\n  try { const v = abaCfg_().getRange('A2').getValue(); config = v ? JSON.parse(String(v)) : null; } catch (err) { config = null; }\n  return json_({ ok: true, items: items, orc: orc, config: config });\n}\n";
 function fillRn(){$('#rnOld').innerHTML=[...new Set([...cats,...catsR])].map(opt).join('')}
 $('#renomeia').onclick=()=>{
   const a=$('#rnOld').value,b=$('#rnNew').value.trim();
@@ -1233,14 +1195,17 @@ $('#renomeia').onclick=()=>{
 };
 function fillCfg(){fillCartoes();fillRn();$('#url').value=url;$('#senha').value=senha;$('#cats').value=cats.join('\n');$('#catsR').value=catsR.join('\n')}
 
+$('#verSenha').onclick=()=>{const i=$('#senha'),v=i.type==='password';i.type=v?'text':'password';$('#verSenha').textContent=v?'Ocultar':'Mostrar'};
+$('#status').addEventListener('click',e=>{if(e.target.closest('[data-retry]'))sync(true)});
 // ---------- início ----------
 fillPag();
 $('#data').value=hoje();
 renderLog();infoArmaz();migPag();autoLancar();fillCfg();fillAuto();setTipo('despesa');go('lancar');
 window.addEventListener('online',()=>sync());
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!$('#data').value)$('#data').value=hoje();if(autoLancar())render();sync()}});
+let diaApp=hoje();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const h=hoje();if(h!==diaApp){const antigo=diaApp;diaApp=h;if(mes===antigo.slice(0,7))mes=h.slice(0,7);if($('#data').value===antigo)$('#data').value=h;render()}if(!$('#data').value)$('#data').value=hoje();if(autoLancar())render();sync()}});
 sync();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(e=>logFalha('App','Modo offline indisponível: '+e.message));
 </script>
 </body>
 </html>
