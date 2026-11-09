@@ -166,7 +166,16 @@ body.t-cristal .vh input{font-weight:600}
 .li .tx em{display:block;font-style:normal;font-size:12.5px;color:var(--mut)}.li .tx em:empty{display:none}
 .li .am{text-align:right;flex:none}.li .am .v{font-size:16px;white-space:nowrap}.li .am .s{display:block;font-size:12px;color:var(--warn);margin-top:2px}
 .li .ckb{width:36px;height:36px;font-size:15px}
-</style>
+.hd4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}.hd4 div{font-size:11.5px;color:var(--mut)}.hd4 b{display:block;font-size:15px;color:var(--txt);margin-top:2px;white-space:nowrap}
+.sb{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--line)}.sb i{display:block;height:100%}
+.sb .pg{background:var(--pri)}.sb .cm{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--pri) 55%,transparent) 0 4px,color-mix(in srgb,var(--pri) 22%,transparent) 4px 8px)}
+.sb.x .pg{background:var(--bad)}.sb.x .cm{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 55%,transparent) 0 4px,color-mix(in srgb,var(--bad) 22%,transparent) 4px 8px)}
+.lg{display:flex;gap:12px;font-size:11.5px;color:var(--mut);margin-top:8px}.lg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.lg .a{background:var(--pri)}.lg .b{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--pri) 55%,transparent) 0 3px,color-mix(in srgb,var(--pri) 22%,transparent) 3px 6px)}.lg .c{background:var(--line)}
+.brow .c3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:7px 0 0 20px;font-size:12px;color:var(--mut)}.brow .c3 b{display:block;font-size:13.5px;font-weight:600;color:var(--txt)}
+.brow .c3 b.neg{color:var(--bad)}.brow .c3 b.pos{color:var(--ok)}
+.brow .sb{margin-left:20px;margin-top:8px}
+.oh .ant{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:13px}.oh .ant small{display:block;color:var(--mut);font-size:11.5px;margin-top:1px}.oh .ant b{white-space:nowrap}</style>
 </head>
 <body class="t-cristal">
 <header><h1>Despesas</h1><span id="sync"></span></header>
@@ -192,7 +201,6 @@ body.t-cristal .vh input{font-weight:600}
       <div class="only-d"><label>Pagamento</label><select id="pag"></select></div>
     </div>
     <div id="vencBox" hidden><label>Vencimento do boleto (opcional)</label><input id="venc" type="date"></div>
-    <div id="moBox"><label>Contar no orçamento de</label><select id="mo"></select></div>
     <div class="row2" id="rowDS">
       <div id="stBox"><label>Situação</label><select id="st"></select></div>
       <div id="dataBox"><label>Data (1ª parcela)</label><input id="data" type="date"></div>
@@ -312,7 +320,6 @@ body.t-cristal .vh input{font-weight:600}
   </div>
   <div class="row2">
     <div><label>Data</label><input id="e_data" type="date"></div>
-    <div id="e_moBox"><label>Contar no orçamento de</label><select id="e_mo"></select></div>
     <div id="e_vencBox" hidden><label>Vencimento do boleto (opcional)</label><input id="e_venc" type="date"></div>
     <div><label>Situação</label><select id="e_st"></select></div>
   </div>
@@ -482,7 +489,7 @@ const live=()=>items.filter(i=>!i.del);
 const touch=it=>{it.rev=(it.rev||0)+1;it.sync=false};
 
 // ---------- cálculos ----------
-const bm=i=>i.mo||i.data.slice(0,7);   // mês em que a despesa pesa no orçamento (padrão: mês da compra)
+const bm=i=>i.data.slice(0,7);   // mês em que a despesa pesa no orçamento = mês da data do lançamento (cada parcela no seu mês)
 const gastoCat=(m,cat)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===cat&&bm(i)===m).reduce((s,i)=>s+i.valor-i.reembRec,0));   // gasto líquido: desconta o reembolso já recebido
 function calc(m){
   const r={rec:0,recOk:0,recPend:0,pagas:0,pend:0,reRec:0,inv:0,invOk:0,invPend:0,byCat:{}};
@@ -601,7 +608,7 @@ async function sync(manual){
   try{
     for(let k=0;k<lotes;k++){
       const part=pend.slice(k*LOTE,(k+1)*LOTE);
-      const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',mo:i.mo||'',del:!!i.del}))};
+      const body={action:'sync',items:part.map(i=>({id:i.id,tipo:i.tipo,data:i.data,desc:i.desc,cat:i.cat,pag:i.pag,valor:i.valor,st:i.st,reemb:i.reemb,reembRec:i.reembRec,grupo:i.grupo,parc:i.parc,venc:i.venc||'',del:!!i.del}))};
       if(k===0){if(od)body.orc=flatOrc();if(cd)body.config=cfgObj()}
       if(lotes>1)$('#status').textContent=`Enviando ${Math.min((k+1)*LOTE,pend.length)} de ${pend.length}...`;
       await api(body,'Sincronização'+(lotes>1?` (lote ${k+1}/${lotes})`:''));
@@ -622,7 +629,7 @@ async function sync(manual){
 function rowHTML(i,ano=false,semData=false){
   const r=i.tipo==='receita',inv=!r&&isInv(i.cat);
   const topo=r?(i.st==='pend'?'Receita prevista':'Receita recebida'):[semData?'':(ano?fmtD(i.data):fmtD(i.data).slice(0,5)),i.pag||'À vista',i.venc?'vence '+fmtD(i.venc).slice(0,5):''].filter(Boolean).join(' · ');
-  const base=[esc(i.cat),inv?'investimento':'',i.grupo==='auto'?'automático':'',(!r&&!inv&&i.mo&&i.mo!==i.data.slice(0,7))?`orçamento de ${MES3[+i.mo.slice(5)-1]}`:'',(!r&&!inv&&i.reemb)?(i.reembRec>0.004?`↩ reembolsado ${brl(i.reembRec)}`:'↩ aguardando reembolso'):''].filter(Boolean).join(' · ');
+  const base=[esc(i.cat),inv?'investimento':'',i.grupo==='auto'?'automático':'',(!r&&!inv&&i.reemb)?(i.reembRec>0.004?`↩ reembolsado ${brl(i.reembRec)}`:'↩ aguardando reembolso'):''].filter(Boolean).join(' · ');
   return `<div class="item li" data-id="${i.id}"><i class="d" style="background:${catCor(i.cat)}"></i><div class="tx"><small>${r?topo:esc(topo)}</small><b>${esc(i.desc||i.cat)}${i.parc?` <small class="pc">(${i.parc})</small>`:''}</b><em>${base}</em></div><div class="rt"><div class="am"><div class="v ${r?'pos':inv?'inv':'neg'}">${r?'+':'−'} ${brl(i.valor)}</div>${i.st==='pend'&&!r?'<span class="s">pendente</span>':''}</div>${i.st==='pend'?`<button class="ckb" data-ck="${i.id}" aria-label="Marcar como realizado">✓</button>`:''}</div></div>`;
 }
 // cor de cada categoria: a mesma do Resumo (ordem de gasto do mês aberto); fora do Resumo, cor neutra
@@ -786,12 +793,16 @@ function sugestao(c){   // mediana dos últimos 6 meses (só conta meses em que 
   return Math.round(med/10)*10;
 }
 function orcRow(c,plan,cor){
-  const p=plan[c]||0,g=gastoCat(mes,c),u=p>0?g/p*100:0,rest=r2(p-g),cl=u>=100?'x':u>=80?'w':'ok',sg=(!p)?sugestao(c):0;
+  const p=plan[c]||0,pg=gastoPg(mes,c),cm=gastoPend(mes,c),g=r2(pg+cm),disp=r2(p-g),sg=(!p)?sugestao(c):0,x=g>p&&p>0;
+  const w=v=>p>0?Math.min(100,v/p*100):0,wp=w(pg),wc=Math.min(100-wp,w(cm));
   return `<div class="brow" data-cat="${esc(c)}"><div class="t"><i class="d" style="background:${cor}"></i><b>${esc(c)}</b><input inputmode="decimal" placeholder="0,00" value="${p?dec(p):''}" aria-label="Planejado para ${esc(c)}"></div>
-   ${p>0?`<div class="m"><span>${brl(g)} de ${brl(p)} · ${Math.round(u)}%</span><span class="${cl}">${rest>=0?'restam '+brl(rest):brl(-rest)+' acima'}</span></div><div class="bar"><i class="${u>=100?'bad':u>=80?'warn':''}" style="width:${Math.min(100,u)}%"></i></div>`
+   ${p>0?`<div class="sb ${x?'x':''}"><i class="pg" style="width:${wp}%"></i><i class="cm" style="width:${wc}%"></i></div>
+   <div class="c3"><div>Pago<b>${brl(pg)}</b></div><div>Pendente<b>${brl(cm)}</b></div><div>${disp>=0?'Disponível':'Acima'}<b class="${disp<0?'neg':'pos'}">${brl(Math.abs(disp))}</b></div></div>`
    :`<div class="m"><span>${g>0?brl(g)+' gastos (sem planejamento)':'sem planejamento'}</span></div>`}
    ${sg>0?`<button class="sug" data-sug="${esc(c)}" data-v="${sg}">Sugerir ${brl(sg)} · mediana de 6 meses</button>`:''}</div>`;
 }
+const gastoPg=(m,c)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===c&&bm(i)===m&&i.st==='ok').reduce((s,i)=>s+i.valor-i.reembRec,0));
+const gastoPend=(m,c)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===c&&bm(i)===m&&i.st==='pend').reduce((s,i)=>s+i.valor-i.reembRec,0));
 function renderOrc(){
   const ac=document.activeElement;
   if(ac&&ac.closest&&ac.closest('#v-orc')&&ac.tagName==='INPUT')return;   // não reconstrói enquanto digita
@@ -800,10 +811,12 @@ function renderOrc(){
   const todas=[...new Set([...cats,...Object.keys(plan).filter(k=>plan[k]>0&&k[0]!=='@'),...usadas])].filter(x=>!isInv(x));
   const R=todas.map(x=>({c:x,p:plan[x]||0,g:gastoCat(mes,x)}));
   const ativos=R.filter(r=>r.p>0||r.g>0).sort((a,b)=>b.p-a.p||b.g-a.g),outros=R.filter(r=>!(r.p>0||r.g>0));
-  const tp=c.planTotal,tg=r2(R.reduce((a,r)=>a+r.g,0)),pc=tp>0?tg/tp*100:0,rest=r2(tp-tg);
+  const tp=c.planTotal,tpg=r2(R.reduce((a,r)=>a+gastoPg(mes,r.c),0)),tcm=r2(R.reduce((a,r)=>a+gastoPend(mes,r.c),0)),tg=r2(tpg+tcm),rest=r2(tp-tg),x=tg>tp&&tp>0;
+  const wp=tp>0?Math.min(100,tpg/tp*100):0,wc=tp>0?Math.min(100-wp,tcm/tp*100):0;
   $('#orcTop').innerHTML=`<div class="l1">Orçamento de ${esc(mesNome(mes))}</div><div class="big">${brl(tp)}</div><div class="nt">total planejado nas categorias</div>
-   ${tp>0?`<div class="mbar"><i style="width:${Math.min(100,pc)}%;background:${pc>=100?'var(--bad)':pc>=80?'var(--warn)':'var(--pri)'}"></i></div>`:''}
-   <div class="grid3"><div>Gasto<b>${brl(tg)}</b></div><div>${rest>=0?'Restam':'Acima'}<b class="${rest<0?'neg':'pos'}">${brl(Math.abs(rest))}</b></div><div>Usado<b>${tp>0?Math.round(pc)+'%':'—'}</b></div></div>`;
+   ${tp>0?`<div class="sb ${x?'x':''}" style="margin-top:14px"><i class="pg" style="width:${wp}%"></i><i class="cm" style="width:${wc}%"></i></div><div class="lg"><span><i class="a"></i>Pago</span><span><i class="b"></i>Pendente</span><span><i class="c"></i>Disponível</span></div>`:''}
+   <div class="hd4"><div>Pago<b>${brl(tpg)}</b></div><div>Pendente<b>${brl(tcm)}</b></div><div>${rest>=0?'Disponível':'Acima'}<b class="${rest<0?'neg':'pos'}">${brl(Math.abs(rest))}</b></div><div>Usado<b>${tp>0?Math.round(tg/tp*100)+'%':'—'}</b></div></div>
+   ${(()=>{if(mes<curMes())return'';const ant=r2(live().filter(i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)&&i.data.slice(0,7)<mes&&(i.venc||i.data).slice(0,7)<=mes).reduce((a,i)=>a+i.valor-i.reembRec,0));return ant>0?`<div class="ant"><span>A pagar de meses anteriores<small>faturas e contas já lançadas; saem do caixa, não consomem este orçamento</small></span><b>${brl(ant)}</b></div>`:''})()}`;
   const cor=c2=>catCor(c2);
   $('#orcList').innerHTML=ativos.map(r=>orcRow(r.c,plan,cor(r.c))).join('')||'<p class="mut">Nenhuma categoria com planejamento ou gasto neste mês.</p>';
   $('#orcOutras').hidden=!outros.length;$('#orcOutrasT').textContent=`Outras categorias (${outros.length})`;
@@ -841,7 +854,7 @@ document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classL
 
 // ---------- formulário de lançamento ----------
 function setTipo(t){
-  tipo=t;fillMo($('#mo'),'');$('#vh').classList.toggle('rec',t==='receita');
+  tipo=t;$('#vh').classList.toggle('rec',t==='receita');
   $$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const lc=LS.get('lastCat_'+t,'');
   $('#cat').innerHTML=(t==='despesa'?cats:catsR).map(opt).join('');
@@ -850,15 +863,10 @@ function setTipo(t){
   tgInv();
   atualizaPag();prevParc();
 }
-function tgInv(){$('#rmBox').hidden=tipo!=='despesa'||isInv($('#cat').value);$('#moBox').hidden=tipo!=='despesa'||isInv($('#cat').value)}   // investimento não tem reembolso
+function tgInv(){$('#rmBox').hidden=tipo!=='despesa'||isInv($('#cat').value)}   // investimento não tem reembolso
 // Quando perguntar Situação e Data:
 //  receita ........ Situação; Data só se "Prevista"       À vista ....... Situação (realizada/prevista); Data só se "Prevista"
 //  Boleto ......... Situação e Data                       Crédito ........ nada (hoje, pela regra da fatura, pendente)
-function fillMo(sel,cur){   // opções: padrão + mês passado até daqui a 12 meses
-  const base=curMes(),l=[];for(let n=-1;n<=12;n++)l.push(mesAdd(base,n));
-  if(cur&&!l.includes(cur))l.push(cur);
-  sel.innerHTML='<option value="">Mês da compra (padrão)</option>'+l.map(m=>`<option value="${m}">${esc(mesNome(m))}</option>`).join('');sel.value=cur||'';
-}
 function modoData(){
   const p=$('#pag').value,pend=$('#st').value==='pend';
   if(tipo==='receita')return{st:true,data:pend};
@@ -911,12 +919,12 @@ function salvar(){
   const novos=[];
   for(let i=0;i<n;i++){
     const data=addMonths(d0,i);
-    novos.push({id:uid(),tipo,data,desc:$('#desc').value.trim(),cat:$('#cat').value,pag:pg,valor:vs[i],st:cart?'pend':((sel==='ok'&&data<=t)?'ok':'pend'),venc:cart?fatura(cart,data).venc:(pg==='Boleto'&&$('#venc').value?addMonths($('#venc').value,i):''),mo:(tipo==='despesa'&&!isInv($('#cat').value)&&$('#mo').value)?addMonths($('#mo').value+'-01',i).slice(0,7):'',reemb:flag,reembRec:0,grupo:g,parc:n>1?`${i+1}/${n}`:'',sync:false,rev:0});
+    novos.push({id:uid(),tipo,data,desc:$('#desc').value.trim(),cat:$('#cat').value,pag:pg,valor:vs[i],st:cart?'pend':((sel==='ok'&&data<=t)?'ok':'pend'),venc:cart?fatura(cart,data).venc:(pg==='Boleto'&&$('#venc').value?addMonths($('#venc').value,i):''),reemb:flag,reembRec:0,grupo:g,parc:n>1?`${i+1}/${n}`:'',sync:false,rev:0});
   }
   items.push(...novos);
   LS.set('lastCat_'+tipo,$('#cat').value);if(tipo==='despesa')LS.set('lastPag',$('#pag').value);
   save();
-  $('#valor').value='';$('#desc').value='';$('#parc').value='1';$('#rm').value='nao';$('#data').value=hoje();$('#venc').value='';$('#mo').value='';$('#st').value='ok';
+  $('#valor').value='';$('#desc').value='';$('#parc').value='1';$('#rm').value='nao';$('#data').value=hoje();$('#venc').value='';$('#st').value='ok';
   atualizaPag();prevParc();render();
   toast(n>1?`${n} parcelas lançadas ✓`:'Salvo ✓');
   if(tipo==='despesa')alertas(novos.map(x=>({m:bm(x),cat:x.cat})));
@@ -941,7 +949,6 @@ function openEdit(id){
   $('#e_cat').innerHTML=[...new Set([...lc,it.cat])].map(opt).join('');$('#e_cat').value=it.cat;
   $('#e_pag').innerHTML=[...new Set([...pagsLista(),...(it.pag?[it.pag]:[])])].map(opt).join('');if(it.pag)$('#e_pag').value=it.pag;
   $('#e_pagBox').hidden=!d;$('#e_reBox').hidden=!d||isInv(it.cat);
-  fillMo($('#e_mo'),it.mo||'');$('#e_moBox').hidden=!d||isInv(it.cat);
   $('#e_data').value=it.data;$('#e_venc').value=it.pag==='Boleto'?(it.venc||''):'';$('#e_vencBox').hidden=!(d&&it.pag==='Boleto');
   $('#e_st').innerHTML=d?'<option value="ok">Pago</option><option value="pend">Pendente</option>':'<option value="ok">Recebida</option><option value="pend">Prevista</option>';
   $('#e_st').value=it.st;
@@ -969,7 +976,7 @@ function salvaEdit(){
   const mud=Object.keys(novo).filter(k=>novo[k]!==it[k]);   // só propaga o que você realmente mudou
   const afet=[{m:bm(it),cat:it.cat}];
   const alvos=($('#e_esc').value==='seg'&&it.grupo&&it.parc)?items.filter(x=>x.grupo===it.grupo&&x.data>d0&&!x.del):[];
-  Object.assign(it,{...novo,data:dataN,mo:(it.tipo==='despesa'&&!isInv(novo.cat))?($('#e_mo').value||''):'',st:$('#e_st').value,venc:cartN?fatura(cartN,dataN).venc:(pagN==='Boleto'?($('#e_venc').value||''):''),reembRec:r2(rr)});
+  Object.assign(it,{...novo,data:dataN,st:$('#e_st').value,venc:cartN?fatura(cartN,dataN).venc:(pagN==='Boleto'?($('#e_venc').value||''):''),reembRec:r2(rr)});
   afet.push({m:bm(it),cat:it.cat});touch(it);
   alvos.forEach(x=>{
     afet.push({m:bm(x),cat:x.cat});
@@ -1052,7 +1059,7 @@ $('#e_payFat').onclick=()=>{
   l.forEach(x=>{x.st='ok';touch(x)});save();closeModal();render();toast('Fatura marcada como paga ✓');sync();
 };
 $('#e_rm').onchange=toggleRe;
-$('#e_cat').onchange=()=>{const it=items.find(i=>i.id===editId);$('#e_moBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value);$('#e_reBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value)};
+$('#e_cat').onchange=()=>{const it=items.find(i=>i.id===editId);$('#e_reBox').hidden=!it||it.tipo!=='despesa'||isInv($('#e_cat').value)};
 $('#cat').addEventListener('change',tgInv);
 $('#e_rrAll').onclick=()=>{$('#e_rrec').value=$('#e_valor').value};
 
