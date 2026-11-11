@@ -185,6 +185,22 @@ body.t-cristal .vh input{font-weight:600}
 .dv .bt{display:flex;gap:8px;margin-top:8px}.dv .bt button,.dv .r button{padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:13.5px}
 .dv .bt button{flex:1}.dv .bt button.d{color:var(--bad)}
 .dv .add{margin-top:8px}.dv .add .row2{margin-bottom:6px}
+#v-rel{--axis:color-mix(in srgb,var(--mut) 55%,var(--card))}
+.rh{display:flex;align-items:center;gap:12px;margin-bottom:12px}.rh h2{margin:0;font-size:20px;font-weight:600}.rh .btn{width:auto;padding:9px 14px;font-size:14px}
+.rf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.rf label{font-size:12px;color:var(--mut)}.rf select{width:100%;margin-top:4px}
+#v-rel .card>b{display:block;font-size:16px;margin-bottom:4px}#v-rel .sm{font-size:13px;margin:4px 0 10px}
+#v-rel .gt{font-size:13px;color:var(--mut);margin:10px 0 2px}#v-rel .sh{font-size:12px;color:var(--mut);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.ch{width:100%;height:auto;display:block;touch-action:pan-y}.ch .ax{font-size:10.5px;fill:var(--mut)}
+.hb{margin:10px 0}.hb .t,.dv2 .t{display:flex;justify-content:space-between;gap:8px;font-size:14px}.hb .t b,.dv2 .t b{font-weight:600;white-space:nowrap}.hb em,.dv2 em{font-style:normal;color:var(--mut);font-weight:400;font-size:12.5px}
+.hb .tr,.tr2{height:8px;border-radius:4px;background:var(--line);margin-top:5px;overflow:hidden}.hb .tr i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--pri)}
+.tr2 i{display:block;height:100%;border-radius:0 4px 4px 0}.tr2 i.up{background:var(--bad)}.tr2 i.dn{background:var(--ok)}.dv2{margin:9px 0}.dv2 b.up{color:var(--bad)}.dv2 b.dn{color:var(--ok)}
+.mg{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.mg:first-of-type{border-top:0}.mg .nu{width:20px;color:var(--mut);font-size:13px}.mg .tx{flex:1;min-width:0}.mg .tx b{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mg small{color:var(--mut);font-size:12px}.mg .v{font-size:14px;white-space:nowrap}
+.rseg{display:flex;background:var(--bg);border-radius:12px;padding:3px;margin:8px 0}.rseg button{flex:1;padding:9px 6px;border:0;border-radius:10px;background:none;color:var(--mut);font-size:14px;font-weight:600}.rseg button.on{background:var(--card);color:var(--txt);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.lgd{display:flex;gap:14px;font-size:12.5px;color:var(--mut);margin:4px 0}.lgd i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.tv{margin-top:8px}.tv summary{font-size:13px;color:var(--mut);cursor:pointer}.tw{overflow-x:auto}.tw table{width:100%;border-collapse:collapse;font-size:13px}.tw th,.tw td{padding:6px 4px;border-top:1px solid var(--line);text-align:left}.tw .n{text-align:right;white-space:nowrap}.tw th{font-weight:500;color:var(--mut)}
+.tw.anos{margin-top:6px}
+#relTip{position:fixed;z-index:50;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;font-size:12.5px}
+#relTip .tt{color:var(--mut);margin-bottom:3px}#relTip .tr{display:flex;align-items:center;gap:6px}#relTip .tr i{width:12px;height:3px;border-radius:2px;display:inline-block}#relTip .tr b{font-size:14px}#relTip .tr span{color:var(--mut)}
 </style>
 </head>
 <body class="t-cristal">
@@ -263,7 +279,13 @@ body.t-cristal .vh input{font-weight:600}
 </section>
 
 <!-- AJUSTES -->
+<section id="v-rel" class="view">
+  <div class="rh"><button class="btn sec" data-go="cfg">‹ Ajustes</button><h2>Relatórios</h2></div>
+  <div id="relBody"></div>
+  <div id="relTip" hidden></div>
+</section>
 <section id="v-cfg" class="view">
+  <button class="btn" id="abrirRel" style="margin-bottom:12px">Relatórios e gráficos ›</button>
   <details class="colap card" data-k="guia"><summary><b>Como ativar o backup na sua planilha</b></summary>
     <ol class="guia"><li>Crie uma planilha nova no Google Planilhas.</li><li>Abra <b>Extensões → Apps Script</b>, apague o conteúdo e cole o código copiado pelo botão abaixo.</li><li>Na linha <code>const SENHA</code>, troque o texto por uma senha longa e secreta.</li><li>Clique em <b>Implantar → Nova implantação → App da web</b>. Em "Quem pode acessar", escolha <b>Qualquer pessoa</b>, e implante (autorize quando pedir).</li><li>Copie a URL que termina em <code>/exec</code> e cole abaixo, junto com a mesma senha.</li></ol>
     <button class="btn sec" id="copiaScript">Copiar código do script</button>
@@ -891,6 +913,7 @@ function render(){
   if(aba==='painel')renderPainel();
   if(aba==='lista')renderLista();
   if(aba==='orc')renderOrc();
+  if(aba==='rel')renderRel();
   if(aba==='lancar')renderRecentes();
 }
 function go(a){
@@ -1090,7 +1113,161 @@ function excluir(lista){
   clearTimeout(syncExcl);syncExcl=setTimeout(sync,7500);   // espera a janela do "Desfazer" antes de enviar a exclusão
 }
 
+// ---------- relatórios ----------
+let relPer=LS.get('relPer','12m'),relMet=LS.get('relMet','desp'),relCat=LS.get('relCat','');
+const relLbl=m=>MES3[+m.slice(5)-1].toLowerCase()+'/'+m.slice(2,4);
+const mesMais=(m,n)=>addMonths(m+'-01',n).slice(0,7);
+const mesesEntre=(a,b)=>{const o=[];for(let m=a;m<=b;m=mesMais(m,1))o.push(m);return o};
+const kfmt=v=>{const a=Math.abs(v),s=v<0?'−':'';return a>=1e6?s+(a/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi':a>=1000?s+(a/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':s+Math.round(a)};
+function niceTicks(max,min){const span=(max-min)||1,raw=span/3,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<=1?1:f<=2?2:f<=5?5:10)*p,lo=Math.floor(min/st+1e-9)*st,hi=Math.ceil(max/st-1e-9)*st,t=[];for(let v=lo;v<=hi+st/1e3;v+=st)t.push(r2(v));return t}
+function relDados(){
+  const cm=curMes(),A={};
+  live().forEach(i=>{
+    const m=bm(i);if(m>cm)return;
+    const o=A[m]||(A[m]={desp:0,rec:0,inv:0,cats:{}});
+    if(i.tipo==='receita'){if(i.cat!=='Reembolso')o.rec+=i.valor}
+    else if(isInv(i.cat)){if(i.st==='ok')o.inv+=i.valor}
+    else{const v=i.valor-reembOf(i);o.desp+=v;o.cats[i.cat]=(o.cats[i.cat]||0)+v}
+  });
+  const ks=Object.keys(A).sort(),prim=ks[0]||cm;
+  return{A,cm,prim,todos:mesesEntre(prim,cm)};   // cm = mês em andamento (incompleto)
+}
+function relMeses(D,per){
+  const y=D.cm.slice(0,4);
+  if(per==='ano')return mesesEntre(y+'-01',D.cm);
+  if(per==='ant')return mesesEntre((y-1)+'-01',(y-1)+'-12');
+  if(per==='tudo')return D.todos;
+  return mesesEntre(mesMais(D.cm,-11),D.cm);
+}
+const fechados=(D,ms)=>{const f=ms.filter(m=>m<D.cm);return f.length?f:ms};   // evolução: o mês em andamento ficaria sempre "baixo" e enganaria
+const sumCat=(D,ms)=>{const t={};ms.forEach(m=>{const o=D.A[m];if(o)for(const c in o.cats)t[c]=(t[c]||0)+o.cats[c]});return t};
+const RC={};   // configuração dos gráficos (para o toque/hover)
+function chartLinha(id,labels,series,{h=170,min0=true,area=false}={}){
+  const W=330,ml=48,mr=10,mt=10,mb=22,iw=W-ml-mr,ih=h-mt-mb,n=labels.length;
+  const todos=series.flatMap(s=>s.vals.filter(v=>v!=null));
+  let mx=Math.max(0,...todos),mn=min0?Math.min(0,...todos):Math.min(...todos);
+  const tk=niceTicks(mx,mn);mx=tk[tk.length-1];mn=tk[0];
+  const X=i=>ml+(n<2?iw/2:i*iw/(n-1)),Y=v=>mt+ih-(v-mn)/((mx-mn)||1)*ih;
+  RC[id]={tipo:'linha',labels,series,ml,iw,n};
+  let g=tk.map(t=>`<line x1="${ml}" x2="${W-mr}" y1="${Y(t)}" y2="${Y(t)}" stroke="${t===0?'var(--axis)':'var(--line)'}" stroke-width="1"/><text x="${ml-6}" y="${Y(t)+4}" text-anchor="end" class="ax">${kfmt(t)}</text>`).join('');
+  const passo=Math.max(1,Math.ceil(n/6));
+  g+=labels.map((l,i)=>(i===n-1||(i%passo===0&&n-1-i>=Math.ceil(passo*.7)))?`<text x="${X(i)+(i===n-1?4:0)}" y="${h-6}" text-anchor="${i===n-1?'end':'middle'}" class="ax">${esc(l)}</text>`:'').join('');
+  series.forEach((s,k)=>{
+    let d='',ult=-1;s.vals.forEach((v,i)=>{if(v!=null){d+=(d?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);ult=i}});
+    if(area&&k===0&&ult>=0){const f=s.vals.findIndex(v=>v!=null);g+=`<path d="${d}L${X(ult)} ${Y(Math.max(mn,0))}L${X(f)} ${Y(Math.max(mn,0))}Z" fill="${s.cor}" opacity=".1"/>`}
+    g+=`<path d="${d}" fill="none" stroke="${s.cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(ult>=0)g+=`<circle cx="${X(ult)}" cy="${Y(s.vals[ult])}" r="4" fill="${s.cor}" stroke="var(--card)" stroke-width="2"/>`;
+  });
+  return `<svg class="ch" viewBox="0 0 ${W} ${h}" data-ch="${id}" role="img" aria-label="Gráfico de linhas"><g>${g}</g><line class="xh" y1="${mt}" y2="${mt+ih}" stroke="var(--mut)" stroke-width="1" visibility="hidden"/><rect class="hit" x="${ml}" y="0" width="${iw}" height="${h}" fill="transparent"/></svg>`;
+}
+function chartColunas(id,labels,vals,cor,{h=150}={}){
+  const W=330,ml=48,mr=10,mt=10,mb=22,iw=W-ml-mr,ih=h-mt-mb,n=labels.length;
+  const tk=niceTicks(Math.max(0,...vals),0),mx=tk[tk.length-1]||1,Y=v=>mt+ih-v/mx*ih,slot=iw/n,bw=Math.max(2,Math.min(24,slot*0.68));
+  RC[id]={tipo:'col',labels,series:[{name:'',vals,cor}],ml,iw,n};
+  let g=tk.map(t=>`<line x1="${ml}" x2="${W-mr}" y1="${Y(t)}" y2="${Y(t)}" stroke="${t===0?'var(--axis)':'var(--line)'}"/><text x="${ml-6}" y="${Y(t)+4}" text-anchor="end" class="ax">${kfmt(t)}</text>`).join('');
+  const passo=Math.max(1,Math.ceil(n/6));
+  vals.forEach((v,i)=>{
+    const x=ml+slot*i+(slot-bw)/2,y=Y(v),hh=Math.max(0,mt+ih-y),r=Math.min(4,bw/2,hh);
+    if(hh>0)g+=`<path class="bar" data-i="${i}" d="M${x} ${mt+ih}V${y+r}Q${x} ${y} ${x+r} ${y}H${x+bw-r}Q${x+bw} ${y} ${x+bw} ${y+r}V${mt+ih}Z" fill="${cor}"/>`;
+    if(i%passo===0)g+=`<text x="${x+bw/2}" y="${h-6}" text-anchor="middle" class="ax">${esc(labels[i])}</text>`;
+  });
+  return `<svg class="ch" viewBox="0 0 ${W} ${h}" data-ch="${id}" role="img" aria-label="Gráfico de colunas"><g>${g}</g><rect class="hit" x="${ml}" y="0" width="${iw}" height="${h}" fill="transparent"/></svg>`;
+}
+const tabelaRel=(cab,linhas)=>`<details class="tv"><summary>Ver como tabela</summary><div class="tw"><table><thead><tr>${cab.map((c,i)=>`<th${i?' class="n"':''}>${esc(c)}</th>`).join('')}</tr></thead><tbody>${linhas.map(l=>`<tr>${l.map((c,i)=>`<td${i?' class="n"':''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+const pct=(a,b)=>b>0.004?((a-b)/b*100):null;
+const fpct=v=>v==null?'—':(v>0?'+':v<0?'−':'')+Math.abs(v).toLocaleString('pt-BR',{maximumFractionDigits:0})+'%';
+
+function relCats(D,ms){
+  const t=sumCat(D,ms),tot=Object.values(t).reduce((a,b)=>a+b,0),L=Object.entries(t).filter(x=>x[1]>0.004).sort((a,b)=>b[1]-a[1]);
+  const top=L.slice(0,9),res=L.slice(9),outras=res.reduce((a,x)=>a+x[1],0),mx=top.length?top[0][1]:1;
+  const lin=[...top,...(outras>0?[['Outras ('+res.length+')',outras]]:[])];
+  const rows=lin.map(([c,v])=>`<div class="hb"><div class="t"><span>${esc(c)}</span><b>${brl(v)} <em>${tot?Math.round(v/tot*100):0}%</em></b></div><div class="tr"><i style="width:${Math.max(1.5,v/mx*100)}%"></i></div></div>`).join('');
+  return{html:`<div class="mut sm">Total ${brl(r2(tot))} em ${ms.length} ${ms.length===1?'mês':'meses'} · líquido de reembolsos recebidos</div>${rows||'<p class="mut">Sem despesas no período.</p>'}${tabelaRel(['Categoria','Valor','%'],L.map(([c,v])=>[c,brl(v),(tot?Math.round(v/tot*100):0)+'%']))}`,lista:L.map(x=>x[0])};
+}
+function relCatTempo(D,ms0,cat){
+  const ms=fechados(D,ms0);
+  const vals=ms.map(m=>r2((D.A[m]&&D.A[m].cats[cat])||0)),med=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+  const mx=Math.max(...vals,0),mxI=vals.indexOf(mx);
+  return `<div class="sm mut">Média ${brl(r2(med))} por mês${mx>0?` · maior mês: ${relLbl(ms[mxI])} (${brl(mx)})`:''}</div>${chartLinha('cat',ms.map(relLbl),[{name:cat,vals,cor:'var(--pri)'}],{area:true})}${tabelaRel(['Mês','Valor'],ms.map((m,i)=>[relLbl(m),brl(vals[i])]).reverse())}`;
+}
+function relAnos(D){
+  const ys=[...new Set(D.todos.map(m=>m.slice(0,4)))].slice(-4),cm=D.cm,yc=cm.slice(0,4),K=+cm.slice(5)-1;   // K = meses já fechados neste ano
+  const val=(m)=>{const o=D.A[m];if(!o)return 0;return relMet==='rec'?o.rec:relMet==='sobra'?o.rec-o.desp:o.desp};
+  const N=ys.length,cor=k=>N===1?'var(--pri)':`color-mix(in srgb,var(--pri) ${45+Math.round(55*k/(N-1))}%,var(--card))`;
+  const mm=(y,i)=>y+'-'+String(i).padStart(2,'0');
+  const series=ys.map((y,k)=>({name:y,cor:cor(k),vals:Array.from({length:12},(_,i)=>{const m=mm(y,i+1);return(m>=cm||m<D.prim)?null:r2(val(m))})}));
+  const limite=K>0?K:12;   // compara o mesmo trecho do ano (jan até o último mês fechado)
+  const tot=ys.map(y=>{if(y===yc&&K===0)return null;let t=0;for(let i=1;i<=limite;i++){const m=mm(y,i);if(m<cm)t+=val(m)}return r2(t)});
+  const rot=y=>K>0?`${y} (jan–${MES3[K-1].toLowerCase()})`:y;
+  const lin=ys.map((y,k)=>[rot(y),tot[k]==null?'—':brl(tot[k]),(k&&tot[k]!=null&&tot[k-1]!=null)?fpct(pct(tot[k],tot[k-1])):'—']);
+  const cab={desp:'Despesas',rec:'Receitas',sobra:'Sobra (receitas − despesas)'}[relMet];
+  return `<div class="rseg" id="relMet">${[['desp','Despesas'],['rec','Receitas'],['sobra','Sobra']].map(([k,t])=>`<button data-met="${k}" class="${relMet===k?'on':''}">${t}</button>`).join('')}</div>
+   <div class="lgd">${ys.map((y,k)=>`<span><i style="background:${cor(k)}"></i>${y}</span>`).join('')}</div>
+   ${chartLinha('anos',MES3.map(m=>m[0]),series,{h:190,min0:true})}
+   <div class="mut sm">${cab} por mês, ano a ano. O mês em andamento não entra. Os totais comparam o mesmo trecho de cada ano.</div>
+   ${tabelaRel(['Ano',cab,'vs. ano anterior'],[...lin].reverse())}
+   <div class="tw anos"><table><thead><tr><th>Ano</th><th class="n">Total</th><th class="n">vs. anterior</th></tr></thead><tbody>${[...lin].reverse().map(l=>`<tr><td>${esc(l[0])}</td><td class="n">${esc(l[1])}</td><td class="n">${esc(l[2])}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function relInv(D,ms0){
+  const ms=fechados(D,ms0);
+  const vals=ms.map(m=>r2((D.A[m]&&D.A[m].inv)||0)),tot=r2(vals.reduce((a,b)=>a+b,0));
+  let ac=0;const acum=D.todos.map(m=>{ac+=(D.A[m]&&D.A[m].inv)||0;return r2(ac)}),ini=D.todos.indexOf(ms[0]);
+  const acv=acum.slice(ini>=0?ini:0);
+  return `<div class="sm mut">Aportado no período: <b>${brl(tot)}</b> · média ${brl(r2(ms.length?tot/ms.length:0))} por mês</div>
+   <div class="gt">Aportes por mês</div>${chartColunas('inv',ms.map(relLbl),vals,'var(--pri)')}
+   <div class="gt">Total aportado, acumulado</div>${chartLinha('invac',ms.map(relLbl),[{name:'Acumulado',vals:acv.slice(0,ms.length),cor:'var(--pri)'}],{area:true,h:150})}
+   ${tabelaRel(['Mês','Aporte','Acumulado'],ms.map((m,i)=>[relLbl(m),brl(vals[i]),brl(acv[i]||0)]).reverse())}`;
+}
+function relMaiores(D,ms,per){
+  const set=new Set(ms),L=live().filter(i=>i.tipo==='despesa'&&!isInv(i.cat)&&set.has(bm(i))&&bm(i)<=D.cm).map(i=>({i,v:i.valor-reembOf(i)})).sort((a,b)=>b.v-a.v).slice(0,10);
+  const top=L.map(({i,v},k)=>`<div class="mg"><span class="nu">${k+1}</span><div class="tx"><b>${esc(i.desc||i.cat)}</b><small>${fmtD(i.data)} · ${esc(i.cat)}</small></div><b class="v">${brl(r2(v))}</b></div>`).join('');
+  const n=Math.min(ms.length,12),atual=per==='tudo'?D.todos.slice(-n):ms,ant=mesesEntre(mesMais(atual[0],-atual.length),mesMais(atual[0],-1)).filter(m=>m>=D.prim);
+  const a=sumCat(D,atual),b=sumCat(D,ant),cats=[...new Set([...Object.keys(a),...Object.keys(b)])];
+  const dif=cats.map(c=>({c,d:r2((a[c]||0)-(b[c]||0)),p:pct(a[c]||0,b[c]||0)})).filter(x=>Math.abs(x.d)>=1).sort((x,y)=>y.d-x.d);
+  const sobe=dif.filter(x=>x.d>0).slice(0,5),desce=dif.filter(x=>x.d<0).slice(-5).reverse();
+  const mx=Math.max(1,...sobe.map(x=>x.d),...desce.map(x=>-x.d));
+  const bar=x=>`<div class="dv2"><div class="t"><span>${esc(x.c)}</span><b class="${x.d>0?'up':'dn'}">${x.d>0?'▲ +':'▼ −'}${brl(Math.abs(x.d))} <em>${fpct(x.p)}</em></b></div><div class="tr2"><i class="${x.d>0?'up':'dn'}" style="width:${Math.max(2,Math.abs(x.d)/mx*100)}%"></i></div></div>`;
+  const aviso=ant.length?`${relLbl(atual[0])} a ${relLbl(atual[atual.length-1])} comparado com ${relLbl(ant[0])} a ${relLbl(ant[ant.length-1])}`:'Ainda não há período anterior para comparar';
+  return `<div class="gt">10 maiores gastos do período</div>${top||'<p class="mut">Sem despesas no período.</p>'}
+   <div class="gt" style="margin-top:16px">O que mais mudou</div><div class="mut sm">${aviso}</div>
+   ${ant.length?`${sobe.length?'<div class="sh">Mais gasto</div>'+sobe.map(bar).join(''):''}${desce.length?'<div class="sh">Menos gasto</div>'+desce.map(bar).join(''):''}`:''}`;
+}
+function renderRel(){
+  const D=relDados(),ms=relMeses(D,relPer),cs=relCats(D,ms);
+  if(!relCat||!cs.lista.includes(relCat))relCat=cs.lista[0]||'';
+  const per=[['12m','Últimos 12 meses'],['ano','Este ano'],['ant','Ano passado'],['tudo','Tudo']];
+  $('#relBody').innerHTML=`<div class="rf"><label>Período<select id="relPer">${per.map(([k,t])=>`<option value="${k}" ${relPer===k?'selected':''}>${t}</option>`).join('')}</select></label>
+   <label>Categoria (gráfico 2)<select id="relCat">${cs.lista.map(c=>`<option ${c===relCat?'selected':''}>${esc(c)}</option>`).join('')}</select></label></div>
+   <div class="card"><b>Para onde vai o dinheiro</b>${cs.html}</div>
+   <div class="card"><b>${esc(relCat||'Categoria')} ao longo do tempo</b>${relCat?relCatTempo(D,ms,relCat):'<p class="mut">Sem dados.</p>'}</div>
+   <div class="card"><b>Ano contra ano</b>${relAnos(D)}<div class="mut sm">Não depende do período escolhido acima.</div></div>
+   <div class="card"><b>Investimentos</b>${relInv(D,ms)}</div>
+   <div class="card"><b>Maiores gastos e variações</b>${relMaiores(D,ms,relPer)}</div>`;
+}
+function relTip(e,svg){
+  const c=RC[svg.dataset.ch],tip=$('#relTip');if(!c)return;
+  const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*330;
+  let i=Math.round((x-c.ml)/c.iw*(c.n-1));if(c.tipo==='col')i=Math.floor((x-c.ml)/(c.iw/c.n));
+  i=Math.max(0,Math.min(c.n-1,i));
+  const xh=svg.querySelector('.xh');
+  if(xh){const px=c.ml+(c.n<2?c.iw/2:i*c.iw/(c.n-1));xh.setAttribute('x1',px);xh.setAttribute('x2',px);xh.setAttribute('visibility','visible')}
+  svg.querySelectorAll('.bar').forEach(b=>b.style.opacity=(+b.dataset.i===i)?1:.55);
+  tip.replaceChildren();const t=document.createElement('div');t.className='tt';t.textContent=c.labels[i]+(svg.dataset.ch==='anos'?'':'');tip.append(t);
+  c.series.forEach(s=>{const v=s.vals[i];if(v==null)return;const rw=document.createElement('div');rw.className='tr';const k=document.createElement('i');k.style.background=s.cor;const b=document.createElement('b');b.textContent=brl(v);const nm=document.createElement('span');nm.textContent=s.name||'';rw.append(k,b,nm);tip.append(rw)});
+  tip.hidden=false;const w=tip.offsetWidth,px=Math.min(innerWidth-w-8,Math.max(8,e.clientX-w/2));tip.style.left=px+'px';tip.style.top=Math.max(8,e.clientY-tip.offsetHeight-18)+'px';
+}
+function relFora(svg){$('#relTip').hidden=true;const xh=svg.querySelector('.xh');if(xh)xh.setAttribute('visibility','hidden');svg.querySelectorAll('.bar').forEach(b=>b.style.opacity=1)}
+
 // ---------- eventos ----------
+$('#abrirRel').onclick=()=>go('rel');
+$('#v-rel').addEventListener('change',e=>{
+  if(e.target.id==='relPer'){relPer=e.target.value;LS.set('relPer',relPer);renderRel()}
+  if(e.target.id==='relCat'){relCat=e.target.value;LS.set('relCat',relCat);renderRel()}
+});
+$('#v-rel').addEventListener('click',e=>{const b=e.target.closest('[data-met]');if(b){relMet=b.dataset.met;LS.set('relMet',relMet);renderRel()}});
+$('#v-rel').addEventListener('pointermove',e=>{const sv=e.target.closest('svg.ch');if(sv)relTip(e,sv)});
+$('#v-rel').addEventListener('pointerleave',()=>{$$('#v-rel svg.ch').forEach(relFora)},true);
+$('#v-rel').addEventListener('pointerout',e=>{const sv=e.target.closest&&e.target.closest('svg.ch');if(sv&&!sv.contains(e.relatedTarget))relFora(sv)});
 document.body.addEventListener('click',e=>{
   const t=e.target;
   if(t.id==='undoBtn'){const f=undoFn;undoFn=null;$('#toast').classList.remove('show','act');if(f)f();return}
