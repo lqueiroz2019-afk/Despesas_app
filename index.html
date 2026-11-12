@@ -210,7 +210,7 @@ body.t-cristal .vh input{font-weight:600}
 #lAtivos{flex-wrap:wrap;overflow:visible}
 #lAtivos .ac{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:13.5px;cursor:pointer}
 #lAtivos .ac b{color:var(--mut);font-weight:400}
-.brow .rcv{margin:6px 0 0 20px;font-size:12px;color:var(--mut)}
+.brow .c3{grid-template-columns:1fr 1fr 1.4fr}.brow .c3 .rcv2{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}   /* sem seleção de texto (evita a barra "Toque para pesquisar"); campos de digitação seguem normais */
 input,textarea,select{-webkit-user-select:text;user-select:text}
 </style>
@@ -710,7 +710,7 @@ async function sync(manual){
     $('#status').textContent='Última sincronização: '+new Date().toLocaleString('pt-BR');
     if(manual)toast('Sincronizado ✓');
   }catch(e){$('#status').innerHTML=esc('Falha ao sincronizar: '+e.message+(lotes>1?' O que já foi enviado fica salvo; toque de novo para continuar.':' Seus lançamentos continuam salvos no aparelho e serão reenviados.'))+' <button class="btn sec" data-retry="1" type="button">Tentar de novo</button>';if(manual)toast(e.message,4500)}
-  syncing=false;render();   // ao terminar, redesenha a tela atual (atualiza indicador, Recentes do Lançar, lista e painel)
+  syncing=false;renderStatus();   // a tela já foi redesenhada pela ação; aqui só o indicador muda
 }
 
 // ---------- renderização ----------
@@ -917,7 +917,7 @@ function orcRow(c,plan,cor){
   const w=v=>p>0?Math.min(100,v/p*100):0,wp=w(pg),wc=Math.min(100-wp,w(cm));
   return `<div class="brow" data-cat="${esc(c)}"><div class="t"><i class="d" style="background:${cor}"></i><b>${esc(c)}</b><input inputmode="decimal" placeholder="0,00" value="${p?dec(p):''}" aria-label="Planejado para ${esc(c)}"></div>
    ${p>0?`<div class="sb ${x?'x':''}"><i class="pg" style="width:${wp}%"></i><i class="cm" style="width:${wc}%"></i></div>
-   <div class="c3"><div>Pago<b>${brl(pg)}</b></div><div>Pendente<b>${brl(cm)}</b></div><div>${disp>=0?'Disponível':'Acima'}<b class="${disp<0?'neg':'pos'}">${brl(Math.abs(disp))}</b></div></div>${ar>0.004?`<div class="rcv">↩ ${brl(ar)} a receber</div>`:''}`
+   <div class="c3"><div>Pago<b>${brl(pg)}</b></div><div>Pendente<b>${brl(cm)}</b></div><div>${disp>=0?'Disponível':'Acima'}<b class="${disp<0?'neg':'pos'}">${brl(Math.abs(disp))}</b>${ar>0.004?`<span class="rcv2">↩ ${brl(ar)} a receber</span>`:''}</div></div>`
    :`<div class="m"><span>${g>0?brl(g)+' gastos (sem planejamento)':'sem planejamento'}</span></div>`}
    ${sg>0?`<button class="sug" data-sug="${esc(c)}" data-v="${sg}">Sugerir ${brl(sg)} · mediana de 6 meses</button>`:''}</div>`;
 }
@@ -931,7 +931,7 @@ function renderOrc(){
   const usadas=live().filter(i=>i.tipo==='despesa'&&bm(i)===mes).map(i=>i.cat);
   const todas=[...new Set([...cats,...Object.keys(plan).filter(k=>plan[k]>0&&k[0]!=='@'),...usadas])].filter(x=>!isInv(x));
   const R=todas.map(x=>({c:x,p:plan[x]||0,g:gastoCat(mes,x)}));
-  const ativos=R.filter(r=>r.p>0||r.g>0).sort((a,b)=>b.p-a.p||b.g-a.g),outros=R.filter(r=>!(r.p>0||r.g>0));
+  const alfa=(a,b)=>a.c.localeCompare(b.c,'pt-BR',{sensitivity:'base'}),ativos=R.filter(r=>r.p>0||r.g>0).sort(alfa),outros=R.filter(r=>!(r.p>0||r.g>0)).sort(alfa);
   const tp=c.planTotal,tpg=r2(R.reduce((a,r)=>a+gastoPg(mes,r.c),0)),tcm=r2(R.reduce((a,r)=>a+gastoPend(mes,r.c),0)),tg=r2(tpg+tcm),rest=r2(tp-tg),x=tg>tp&&tp>0;
   const wp=tp>0?Math.min(100,tpg/tp*100):0,wc=tp>0?Math.min(100-wp,tcm/tp*100):0;
   $('#orcTop').innerHTML=`<div class="l1">Orçamento de ${esc(mesNome(mes))}</div><div class="big">${brl(tp)}</div><div class="nt">total planejado nas categorias</div>
@@ -965,13 +965,19 @@ function render(){
   if(aba==='rel')renderRel();
   if(aba==='lancar')renderRecentes();
 }
-function go(a){
+let histExtra=false;   // há uma entrada extra no histórico quando estamos fora do Painel
+function go(a,pop){
+  if(!pop){if(a!=='painel'){if(!histExtra){try{history.pushState({app:1},'')}catch(e){}histExtra=true}}else if(histExtra){histExtra=false;try{history.back()}catch(e){}}}
   aba=a;
   $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===a));
   $$('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+a));
   window.scrollTo(0,0);render();
 }
 
+window.addEventListener('popstate',()=>{   // botão voltar do celular: fecha a janela aberta; senão, vai para o Painel
+  if(!$('#modal').hidden){closeModal();if(aba!=='painel'){try{history.pushState({app:1},'')}catch(e){}histExtra=true}return}
+  histExtra=false;if(aba!=='painel')go('painel',true);
+});
 document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('colap')&&d.dataset.k)LS.set('colap_'+d.dataset.k,d.open)},true);
 
 // ---------- formulário de lançamento ----------
