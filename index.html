@@ -202,6 +202,14 @@ body.t-cristal .vh input{font-weight:600}
 .tw.anos{margin-top:6px}
 #relTip{position:fixed;z-index:50;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;font-size:12.5px}
 #relTip .tt{color:var(--mut);margin-bottom:3px}#relTip .tr{display:flex;align-items:center;gap:6px}#relTip .tr i{width:12px;height:3px;border-radius:2px;display:inline-block}#relTip .tr b{font-size:14px}#relTip .tr span{color:var(--mut)}
+#lbar{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+#lbar select{flex:1;min-width:0;margin:0}
+#lbar button{white-space:nowrap;padding:12px 15px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:14.5px;cursor:pointer}
+#lbar #lLimpar{border-color:var(--pri);color:var(--pri);font-weight:600}
+#lDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pri);margin-left:7px;vertical-align:1px}#lDot:empty{}
+#lAtivos{flex-wrap:wrap;overflow:visible}
+#lAtivos .ac{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:13.5px;cursor:pointer}
+#lAtivos .ac b{color:var(--mut);font-weight:400}
 </style>
 </head>
 <body class="t-cristal">
@@ -260,9 +268,11 @@ body.t-cristal .vh input{font-weight:600}
 
 <!-- LISTA -->
 <section id="v-lista" class="view">
-  <div id="filtrosBox" hidden><div class="filtros"><input id="busca" type="search" placeholder="Buscar por descrição, categoria ou valor" autocomplete="off"><select id="fCat"></select></div>
-  <div class="filtros"><select id="fPer" aria-label="Período"><option value="auto">Período: mês exibido (com busca, todos os meses)</option><option value="mes">Só o mês exibido</option><option value="tudo">Todos os meses</option><option value="ano">Este ano</option><option value="ant">Ano passado</option><option value="12m">Últimos 12 meses</option><option value="custom">Período personalizado…</option></select></div>
+  <div id="lbar"><select id="fPer" aria-label="Período"><option value="mes0">Mês atual</option><option value="mes1">Mês passado</option><option value="esp">Escolher mês…</option><option value="3m">Últimos 3 meses</option><option value="ano">Este ano</option><option value="ant">Ano passado</option><option value="12m">Últimos 12 meses</option><option value="tudo">Todos os meses</option><option value="custom">Período personalizado…</option></select><button id="lFiltrar" type="button" data-filtrar>Filtrar<span id="lDot"></span></button><button id="lLimpar" type="button" data-limpar hidden>Limpar ✕</button></div>
+  <div class="row2" id="fEsp" hidden style="margin-bottom:10px"><div><label>Mês</label><input type="month" id="fMes"></div></div>
   <div class="row2" id="fCustom" hidden style="margin-bottom:10px"><div><label>De</label><input type="date" id="fDe"></div><div><label>Até</label><input type="date" id="fAte"></div></div>
+  <div class="chips" id="lAtivos" hidden></div>
+  <div id="filtrosBox" hidden><div class="filtros"><input id="busca" type="search" placeholder="Buscar por descrição, categoria ou valor" autocomplete="off"><select id="fCat"></select></div>
   <div class="chips" id="chips"></div></div>
   <div class="mut" id="sumLista" style="margin:0 4px 4px"></div>
   <div class="card" id="lista"></div>
@@ -501,7 +511,7 @@ const DEF_AUTO={valor:0,desde:''};
 let auto=LS.get('auto',null);
 if(auto===null){auto=JA_USA?{valor:1201.87,desde:'2026-11'}:DEF_AUTO;LS.set('auto',auto)}   // lançamento automático mensal (Benefícios x Mercado)
 let url=LS.get('url',''), senha=LS.get('senha','');
-let aba='lancar', tipo='despesa', filtro='todos', editId=null, lockMes=false, catPend=null;
+let aba='lancar', tipo='despesa', filtro='todos', editId=null, lockMes=false, catPend=null, fatKey='', fatLabel='';
 let mes=(()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,7)})();   // mês local (não UTC)
 
 // ---------- utilidades ----------
@@ -560,6 +570,7 @@ function rrMap(){
 // quanto da despesa já foi devolvido (só o que está marcado como recebido; devolução prevista não reduz o gasto)
 const reembOf=i=>{if(i.tipo!=='despesa'||!i.reemb||isInv(i.cat))return 0;const m=rrMap(),k=kRe(i);return(m.tot[k]&&m.rec[k])?r2(Math.min(i.valor,m.rec[k]*i.valor/m.tot[k])):0};
 const reInfo=i=>{const m=rrMap(),k=kRe(i),par=r2(m.par[k]||0),rec=r2(m.rec[k]||0);return{par,rec,falta:r2(par-rec)}};
+const cd=i=>(i.tipo==='despesa'&&i.venc)||i.data;   // dia em que o dinheiro sai: vencimento (fatura/boleto) ou a própria data
 const bm=i=>i.data.slice(0,7);   // mês em que a despesa pesa no orçamento = mês da data do lançamento (cada parcela no seu mês)
 const gastoCat=(m,cat)=>r2(live().filter(i=>i.tipo==='despesa'&&i.cat===cat&&bm(i)===m).reduce((s,i)=>s+i.valor-reembOf(i),0));   // gasto líquido: desconta o reembolso já recebido
 function calc(m){
@@ -568,19 +579,22 @@ function calc(m){
     if(i.tipo==='receita'){r.rec+=i.valor;if(i.st==='ok')r.recOk+=i.valor;else r.recPend+=i.valor}
     else if(isInv(i.cat)){r.inv+=i.valor;if(i.st==='ok')r.invOk+=i.valor;else r.invPend+=i.valor}   // investimento: fora das despesas
     else{
-      if(i.st==='ok')r.pagas+=i.valor;else r.pend+=i.valor;
+      if(i.st==='ok')r.pagas+=i.valor;
     }
   });
+  live().forEach(i=>{if(i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)&&cd(i).startsWith(m))r.pend+=i.valor});   // pendentes que vencem no mês (caixa)
   const bruto={};
   live().forEach(i=>{if(i.tipo==='despesa'&&!isInv(i.cat)&&bm(i)===m){r.byCat[i.cat]=(r.byCat[i.cat]||0)+i.valor-reembOf(i);bruto[i.cat]=(bruto[i.cat]||0)+i.valor}});   // byCat: gasto líquido (orçamento); bruto: o que sai do caixa
   const plan=orc[m]||{};
   r.prev=0;
-  new Set([...Object.keys(plan),...Object.keys(bruto)]).forEach(c=>{if(!isInv(c)&&c[0]!=='@')r.prev+=Math.max(plan[c]||0,bruto[c]||0)});   // previsão de caixa: devoluções entram como receitas
+  r.semLanc=0;
+  new Set([...Object.keys(plan),...Object.keys(bruto)]).forEach(c=>{if(!isInv(c)&&c[0]!=='@'){r.prev+=Math.max(plan[c]||0,bruto[c]||0);r.semLanc+=Math.max(0,(plan[c]||0)-(bruto[c]||0))}});   // semLanc: orçamento do mês ainda sem lançamento
   r.gasto=Object.values(r.byCat).reduce((s,v)=>s+v,0);   // líquido de reembolsos recebidos
   r.planTotal=Object.entries(plan).reduce((s,[c,v])=>s+(isInv(c)||c[0]==='@'?0:(v||0)),0);
   r.invPlan=plan['@invest']||0;r.invRest=r.invPlan>0?Math.max(r.invPend,r.invPlan-r.invOk):r.invPend;   // meta de investimento do mês
   r.saldoAtual=r.recOk-r.pagas+r.reRec-r.invOk;
-  r.saldoPrev=r.rec-r.prev-r.invOk-r.invRest;   // devoluções recebidas já estão nas receitas
+  r.restante=r.pend+r.semLanc;   // despesas ainda por sair: pendentes que vencem no mês + orçamento ainda sem lançamento
+  r.saldoPrev=r.rec-r.pagas-r.restante-r.invOk-r.invRest;   // devoluções recebidas já estão nas receitas
   Object.keys(r).forEach(k=>{if(typeof r[k]==='number')r[k]=r2(r[k])});
   return r;
 }
@@ -732,7 +746,7 @@ function saldoTotal(antes){   // antes='AAAA-MM': só o que veio antes desse mê
 }
 // pendências de meses anteriores (faturas e boletos em aberto, receitas previstas) que ainda vão mexer no caixa
 function pendAnteriores(ym){
-  return r2(live().filter(i=>i.st==='pend'&&i.data<ym+'-01').reduce((a,i)=>a+(i.tipo==='receita'?i.valor:-i.valor),0));
+  return r2(live().filter(i=>i.st==='pend'&&(i.tipo==='receita'?i.data:cd(i))<ym+'-01').reduce((a,i)=>a+(i.tipo==='receita'?i.valor:-i.valor),0));   // despesas pelo vencimento, receitas pela data
 }
 const curMes=()=>hoje().slice(0,7);
 function colap(k,titulo,inner,sec){
@@ -744,9 +758,9 @@ function aPagarCard(){
   if(mes<curMes())return '';   // meses anteriores não mostram
   const t=hoje(),g={},fat={},L=[],isCred=p=>!!p&&p.startsWith('Crédito ');
   live().filter(i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)).forEach(i=>{
-    if(isCred(i.pag)&&i.venc){const k=i.pag+'|'+i.venc,o=fat[k]=fat[k]||{pag:i.pag,nome:i.pag,tot:0,venc:i.venc};o.tot+=i.valor}
-    else if(i.pag==='Boleto'&&i.venc&&i.venc<t)L.push({nome:i.desc||i.cat,sub:'Boleto',tot:i.valor,venc:i.venc});
-    else{const k=i.pag==='Boleto'?'bol':'av',o=g[k]=g[k]||{nome:k==='bol'?'Boletos':'À vista pendente',tot:0,venc:''};o.tot+=i.valor;if(k==='bol'&&i.venc&&(!o.venc||i.venc<o.venc))o.venc=i.venc}
+    if(isCred(i.pag)&&i.venc){const k=i.pag+'|'+i.venc,o=fat[k]=fat[k]||{pag:i.pag,nome:i.pag,tot:0,venc:i.venc,fk:'c:'+k};o.tot+=i.valor}
+    else if(i.pag==='Boleto'&&i.venc&&i.venc<t)L.push({nome:i.desc||i.cat,sub:'Boleto',tot:i.valor,venc:i.venc,fk:'i:'+i.id});
+    else{const k=i.pag==='Boleto'?'bol':'av',o=g[k]=g[k]||{nome:k==='bol'?'Boletos':'À vista pendente',tot:0,venc:'',fk:k==='bol'?'b':'a'};o.tot+=i.valor;if(k==='bol'&&i.venc&&(!o.venc||i.venc<o.venc))o.venc=i.venc}
   });
   L.push(...Object.values(g));
   // por cartão: faturas vencidas e não pagas + só a próxima a vencer (mesmo zerada)
@@ -754,14 +768,14 @@ function aPagarCard(){
     const pag='Crédito '+c.nome,mine=Object.values(fat).filter(o=>o.pag===pag);
     mine.filter(o=>o.venc<t).forEach(o=>L.push(o));
     const v0=fatura(c,t).venc,ab=mine.filter(o=>o.venc>=t).sort((a,b)=>a.venc.localeCompare(b.venc))[0];
-    L.push(ab&&ab.venc<=v0?ab:{pag,nome:pag,tot:0,venc:v0});
+    L.push(ab&&ab.venc<=v0?ab:{pag,nome:pag,tot:0,venc:v0,fk:'c:'+pag+'|'+v0});
   });
   L.forEach(x=>{x.tot=r2(x.tot);x.d=x.venc?diasAte(x.venc):null});
   L.sort((a,b)=>((b.d!==null&&b.d<0)-(a.d!==null&&a.d<0))||(a.venc||'9').localeCompare(b.venc||'9')||a.nome.localeCompare(b.nome));
   const tot=r2(L.reduce((a,x)=>a+x.tot,0));
   const cor=x=>!x.tot?'var(--line)':x.d!==null&&x.d<0?'var(--bad)':x.d!==null&&x.d<=3?'var(--warn)':'var(--mut)';
   const quando=x=>x.d===null?'sem vencimento':x.d<0?`venceu há ${-x.d} dia${x.d<-1?'s':''} · ${fmtD(x.venc).slice(0,5)}`:x.d===0?'vence hoje':x.d===1?'vence amanhã':`vence em ${x.d} dias · ${fmtD(x.venc).slice(0,5)}`;
-  const body=tot>0?`<div class="cns">${L.map(x=>`<div class="cn lk ${x.tot?'':'z'}" data-lp="pend"><i class="d" style="background:${cor(x)}"></i><div class="t"><b>${esc(x.nome)}${x.sub?` <span>· ${x.sub}</span>`:''}</b><span class="${x.d!==null&&x.d<0&&x.tot?'late':''}">${quando(x)}</span></div><div class="v ${x.tot?'neg':''}">${brl(x.tot)}</div></div>`).join('')}</div>`:'<div class="okp"><b>✓</b><span>Nada a pagar</span></div>';
+  const body=tot>0?`<div class="cns">${L.map(x=>`<div class="cn lk ${x.tot?'':'z'}" data-lp="pend" data-fk="${esc(x.fk||'')}" data-fl="${esc(x.nome+(x.sub?' · '+x.sub:'')+(x.venc?' · vence '+fmtD(x.venc).slice(0,5):''))}"><i class="d" style="background:${cor(x)}"></i><div class="t"><b>${esc(x.nome)}${x.sub?` <span>· ${x.sub}</span>`:''}</b><span class="${x.d!==null&&x.d<0&&x.tot?'late':''}">${quando(x)}</span></div><div class="v ${x.tot?'neg':''}">${brl(x.tot)}</div></div>`).join('')}</div>`:'<div class="okp"><b>✓</b><span>Nada a pagar</span></div>';
   return colap('apagar',`<span class="mut">A pagar</span><div class="big-n ${tot>0?'neg':'pos'}">${brl(tot)}</div>`,body);
 }
 function resumoCard(){
@@ -781,7 +795,7 @@ function renderPainel(){
   const c=calc(mes),has=c.planTotal>0,cm=curMes(),atual=mes===cm,vigente=mes>=cm;
   const ini=saldoTotal(mes),pa=pendAnteriores(mes),sa=saldoTotal();
   const pagas=r2(c.pagas+c.invOk-c.reRec);                                   // despesas pagas (+ investimentos feitos − reembolsos recebidos)
-  const restante=Math.max(0,r2(c.prev-(c.pagas-c.reRec))),semLanc=Math.max(0,r2(restante-c.pend));
+  const restante=c.restante,semLanc=c.semLanc;
   const fim=r2(sa+pa+c.recPend-restante-c.invRest);
   const cl=v=>v<0?'neg':'pos',sg=v=>(v<0?'− ':'+ ')+brl(Math.abs(v));
   const info=t=>`<i class="inf" title="${t}" data-i="${t}">i</i>`;
@@ -816,16 +830,15 @@ function rotuloDia(d){
   return w[0].toUpperCase()+w.slice(1)+', '+dd+'/'+m+(y!==h.slice(0,4)?'/'+y:'');
 }
 const MES3=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const FILTRAR=()=>{const at=filtro!=='todos'||$('#busca').value.trim()||$('#fCat').value;return `<a class="flt" data-filtrar>Filtrar${at?' ●':''} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></a>`};
 function agrupaDias(L){
   let out='',i=0,first=true;
   while(i<L.length){
     const d=L[i].data,g=[];
     while(i<L.length&&L[i].data===d)g.push(L[i++]);
     const rot=rotuloDia(d).split(',')[0],dd=d.split('-');
-    out+=`<div class="lh"><h3>${rot} <span>${dd[2]}/${MES3[+dd[1]-1]}${dd[0]!==hoje().slice(0,4)?'/'+dd[0]:''}</span></h3>${first?FILTRAR():''}</div>${g.map(x=>rowHTML(x,false,true)).join('')}`;first=false;
+    out+=`<div class="lh"><h3>${rot} <span>${dd[2]}/${MES3[+dd[1]-1]}${dd[0]!==hoje().slice(0,4)?'/'+dd[0]:''}</span></h3></div>${g.map(x=>rowHTML(x,false,true)).join('')}`;first=false;
   }
-  return out||`<div class="lh"><h3><span>Nada por aqui</span></h3>${FILTRAR()}</div>`;
+  return out||`<div class="lh"><h3><span>Nada por aqui</span></h3></div>${(filtro!=='todos'||$('#busca').value.trim()||$('#fCat').value)&&$('#fPer').value!=='tudo'?'<div style="padding:4px 4px 12px"><button class="limpar" data-todos="1">Buscar em todos os meses</button></div>':''}`;
 }
 const norm=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 function renderLista(){
@@ -835,34 +848,53 @@ function renderLista(){
   if(sel.dataset.k!==key){sel.innerHTML='<option value="">Todas as categorias</option>'+todas.map(opt).join('');sel.value=todas.includes(cur)?cur:'';sel.dataset.k=key}
   if(catPend!==null){sel.value=todas.includes(catPend)?catPend:'';catPend=null}
   const q=norm($('#busca').value.trim()),fc=sel.value;
-  let per=$('#fPer').value;if(lockMes)per='mes';   // vindo do Painel: fica no mês
-  $('#fCustom').hidden=per!=='custom';
-  const yy=hoje().slice(0,4);let ini='',fim='9999-99-99';
-  if(per==='mes'||(per==='auto'&&!(q||fc))){ini=mes+'-01';fim=mes+'-31'}
+  const per=$('#fPer').value,cm0=curMes(),yy=cm0.slice(0,4);
+  $('#fCustom').hidden=per!=='custom';$('#fEsp').hidden=per!=='esp';
+  let ini='',fim='9999-99-99',pm='';   // pm: mês único escolhido (para a linha de pendentes do Painel)
+  if(per==='mes0')pm=cm0;else if(per==='mes1')pm=mesMais(cm0,-1);else if(per==='esp')pm=$('#fMes').value||cm0;
+  if(pm){ini=pm+'-01';fim=pm+'-31'}
+  else if(per==='3m'){ini=mesMais(cm0,-2)+'-01';fim=cm0+'-31'}
   else if(per==='ano'){ini=yy+'-01-01';fim=yy+'-12-31'}
   else if(per==='ant'){ini=(yy-1)+'-01-01';fim=(yy-1)+'-12-31'}
-  else if(per==='12m'){ini=mesMais(curMes(),-11)+'-01';fim=curMes()+'-31'}
+  else if(per==='12m'){ini=mesMais(cm0,-11)+'-01';fim=cm0+'-31'}
   else if(per==='custom'){ini=$('#fDe').value||'';fim=$('#fAte').value||'9999-99-99'}
-  const emMes=per==='mes'||(per==='auto'&&!(q||fc)),amplo=!emMes,escopo=(per==='tudo'||per==='auto')?' em todos os meses':' no período';
-  let L=live().filter(i=>i.data>=ini&&i.data<=fim);
+  const emMes=!!pm,escopo=per==='tudo'?' em todos os meses':' no período';
+  const t0=hoje(),isCr=p=>!!p&&p.startsWith('Crédito ');
+  const fk={   // linha do card "A pagar": mostra exatamente o que compõe aquele valor, de qualquer mês
+    c:k=>i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)&&i.venc&&(i.pag+'|'+i.venc)===k,
+    i:k=>i=>i.id===k,
+    b:()=>i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)&&i.pag==='Boleto'&&!(i.venc&&i.venc<t0),
+    a:()=>i=>i.tipo==='despesa'&&i.st==='pend'&&!isInv(i.cat)&&i.pag!=='Boleto'&&!(isCr(i.pag)&&i.venc)
+  }[fatKey.slice(0,1)];
+  const porCx=filtro==='pend'&&lockMes&&!!pm;   // vindo da linha do Painel: pendentes pelo dia em que saem do caixa
+  const nPer=filtro==='pend'&&!lockMes;   // pendentes: entra também o que vence no período
+  let L=fatKey?live().filter(fk(fatKey.slice(2))):live().filter(i=>porCx?(i.st==='pend'&&(i.tipo==='despesa'?cd(i).startsWith(pm):i.data.startsWith(pm))):(i.data>=ini&&i.data<=fim)||(nPer&&i.venc&&i.venc>=ini&&i.venc<=fim&&i.tipo==='despesa'));
   if(fc)L=L.filter(i=>i.cat===fc);
   if(q)L=L.filter(i=>norm(`${i.desc} ${i.cat} ${i.pag||''} ${String(i.valor).replace('.',',')} ${fmtD(i.data)}`).includes(q));
   const f={despesa:i=>i.tipo==='despesa'&&!isInv(i.cat),inv:i=>i.tipo==='despesa'&&isInv(i.cat),receita:i=>i.tipo==='receita',pend:i=>i.st==='pend',rec:i=>i.tipo==='receita'&&i.st==='ok',pagas:i=>i.tipo==='despesa'&&i.st==='ok',reemb:i=>i.tipo==='despesa'&&i.reemb&&!isInv(i.cat)&&(!i.parc||/^1\//.test(i.parc))&&(reInfo(i).falta>0.004||!reInfo(i).par)}[filtro];
-  if(f)L=L.filter(f);
+  if(f&&!fatKey)L=L.filter(f);
   L.sort(ord);
   const s=L.reduce((a,i)=>{
     if(i.tipo==='despesa'){a.d+=i.valor;if(i.st==='pend')a.dp+=i.valor;if(i.reemb&&!isInv(i.cat)&&(!i.parc||/^1\//.test(i.parc))){const x=reInfo(i);a.rp+=x.par?x.falta:0}}
     else{a.r+=i.valor;if(i.st==='pend')a.rpd+=i.valor}return a},{d:0,dp:0,rp:0,r:0,rpd:0});
-  $('#sumLista').textContent=amplo?`${L.length} resultado(s)${escopo}${L.length>200?' (mostrando 200)':''} · despesas ${brl(r2(s.d))} · receitas ${brl(r2(s.r))}`
+  $('#sumLista').textContent=fatKey?`${fatLabel||'A pagar'}: ${L.length} lançamento(s) · ${brl(r2(s.d))}`:!emMes?`${L.length} resultado(s)${escopo}${L.length>200?' (mostrando 200)':''} · despesas ${brl(r2(s.d))} · receitas ${brl(r2(s.r))}`
     :filtro==='reemb'?`Divididas com devolução em aberto: ${L.length} despesa(s), ${brl(r2(s.rp))} a receber`
     :filtro==='pend'?`Despesas pendentes: ${brl(r2(s.dp))} · Receitas previstas: ${brl(r2(s.rpd))}`:`${L.length} lançamento(s)`;
-  if(filtro!=='todos'||q||fc||$('#fPer').value!=='auto'){const bt=document.createElement('button');bt.className='limpar';bt.dataset.limpar='1';bt.textContent='Limpar ✕';$('#sumLista').append(' ',bt)}
+  const MESN=m=>mesNome(m),rotPer={mes0:'Mês atual',mes1:'Mês passado',esp:pm?MESN(pm):'Mês','3m':'Últimos 3 meses',ano:'Este ano',ant:'Ano passado','12m':'Últimos 12 meses',tudo:'Todos os meses',custom:'Personalizado'}[per];
+  const at=[];
+  if(per!=='mes0')at.push(['per','Período',rotPer]);
+  if(fc)at.push(['cat','Categoria',fc]);
+  if($('#busca').value.trim())at.push(['q','Busca','“'+$('#busca').value.trim()+'”']);
+  if(filtro!=='todos'&&!fatKey)at.push(['f','Tipo',(fs.find(x=>x[0]===filtro)||[0,filtro])[1]]);
+  if(fatKey)at.push(['fk','Fatura',fatLabel||'A pagar']);
+  const la=$('#lAtivos');la.hidden=!at.length;la.innerHTML=at.map(([k,r,v])=>`<button class="ac" data-x="${k}">${esc(r)}: <b>${esc(v)}</b> ✕</button>`).join('');
+  $('#lLimpar').hidden=!at.length;$('#lDot').textContent=(filtro!=='todos'||q||fc)?'●':'';$('#lDot').style.display=(filtro!=='todos'||q||fc)?'inline-block':'none';
   $('#lista').innerHTML=agrupaDias(L.slice(0,200));
 }
 let buscaT=0;
 $('#busca').addEventListener('input',()=>{clearTimeout(buscaT);buscaT=setTimeout(()=>{lockMes=false;renderLista()},150)});
 $('#fCat').addEventListener('change',()=>{lockMes=false;renderLista()});
-['fPer','fDe','fAte'].forEach(id=>$('#'+id).addEventListener('change',()=>{lockMes=false;renderLista()}));
+['fPer','fDe','fAte','fMes'].forEach(id=>$('#'+id).addEventListener('change',()=>{lockMes=false;renderLista()}));
 
 function renderRecentes(){
   const L=live().filter(i=>!i.parc||i.parc.startsWith('1/')).sort((a,b)=>b.id.localeCompare(a.id)).slice(0,5);
@@ -920,7 +952,7 @@ function renderStatus(){
   renderAviso(pend);
 }
 function render(){
-  $('#mnav').hidden=!['painel','lista','orc'].includes(aba);
+  $('#mnav').hidden=!['painel','orc'].includes(aba);
   $('#mesLabel').textContent=mesNome(mes);$('#hojeBtn').hidden=mes===curMes();
   renderStatus();
   if(aba==='painel')renderPainel();
@@ -1294,10 +1326,12 @@ document.body.addEventListener('click',e=>{
   if(t.id==='undoBtn'){const f=undoFn;undoFn=null;$('#toast').classList.remove('show','act');if(f)f();return}
   const ck=t.closest('[data-ck]');if(ck){marcarOk(ck.dataset.ck);return}
   const ii=t.closest('[data-i]');if(ii){toast(ii.dataset.i);return}
-  if(t.closest('[data-limpar]')){filtro='todos';$('#busca').value='';$('#fCat').value='';$('#fPer').value='auto';$('#fDe').value='';$('#fAte').value='';lockMes=false;catPend=null;renderLista();return}
+  if(t.closest('[data-todos]')){$('#fPer').value='tudo';lockMes=false;renderLista();return}
+  const ax=t.closest('[data-x]');if(ax){const k=ax.dataset.x;lockMes=false;if(k==='per')$('#fPer').value='mes0';if(k==='cat')$('#fCat').value='';if(k==='q')$('#busca').value='';if(k==='f')filtro='todos';if(k==='fk'){fatKey='';fatLabel='';filtro='todos'}renderLista();return}
+  if(t.closest('[data-limpar]')){filtro='todos';fatKey='';fatLabel='';$('#busca').value='';$('#fCat').value='';$('#fPer').value='mes0';$('#fDe').value='';$('#fAte').value='';$('#fMes').value='';lockMes=false;catPend=null;renderLista();return}
   if(t.closest('[data-filtrar]')){const bx=$('#filtrosBox');bx.hidden=!bx.hidden;return}
-  const lp=t.closest('[data-lp]');if(lp){filtro=lp.dataset.lp;catPend='';lockMes=true;$('#fPer').value='auto';$('#busca').value='';go('lista');return}
-  const lc=t.closest('[data-lc]');if(lc){filtro='todos';catPend=lc.dataset.lc;lockMes=true;$('#fPer').value='auto';$('#busca').value='';go('lista');return}
+  const lp=t.closest('[data-lp]');if(lp){filtro=lp.dataset.lp;catPend='';fatKey=lp.dataset.fk||'';fatLabel=lp.dataset.fl||'';lockMes=!fatKey;if(!fatKey){$('#fPer').value='esp';$('#fMes').value=mes}$('#busca').value='';go('lista');return}
+  const lc=t.closest('[data-lc]');if(lc){filtro='todos';fatKey='';catPend=lc.dataset.lc;lockMes=true;$('#fPer').value='esp';$('#fMes').value=mes;$('#busca').value='';go('lista');return}
   if(t.id==='mesLabel'){abreMp();return}
   if(t.id==='hojeBtn'){mes=curMes();render();return}
   const it=t.closest('.item');if(it){openEdit(it.dataset.id);return}
