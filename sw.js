@@ -1,4 +1,4 @@
-const CACHE = 'despesas-341bd7e2';
+const CACHE = 'despesas-1a5727af';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
